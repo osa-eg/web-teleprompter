@@ -13,6 +13,12 @@ export type EngineCommand =
   | { type: 'nudgePages'; pages: number }
   /** Wheel-like scrolling by a number of lines (used by windows that mirror another one). */
   | { type: 'scrollBy'; lines: number }
+  /** Voice activity: while closed, playback holds (the text only moves while the talent speaks). */
+  | { type: 'voiceGate'; open: boolean }
+  /** Speech following: bring token `pos` (plus `lead` lines) to the reading line; `word` was said. */
+  | { type: 'voiceTrack'; pos: number; lead: number; word: number }
+  /** Voice control turned off. */
+  | { type: 'voiceReset' }
   | { type: 'jumpBlock'; delta: -1 | 1 }
   | { type: 'jumpMarker'; delta: -1 | 1 }
   | { type: 'gotoMarker'; index: number }
@@ -46,6 +52,9 @@ const ENGINE_TYPES = new Set<string>([
   'nudgeLines',
   'nudgePages',
   'scrollBy',
+  'voiceGate',
+  'voiceTrack',
+  'voiceReset',
   'jumpBlock',
   'jumpMarker',
   'gotoMarker',

@@ -39,6 +39,10 @@ font uploads.
   الخط والمرآة، مع الوقت والتقدم. الاتصال مباشر ومشفّر (WebRTC) ومحمي بمفتاح سري في الرابط، حتى 3 هواتف، مع إعادة
   اتصال تلقائية وخيار خادم PeerJS وخوادم TURN خاصة.
 - **أزرار الوسائط**: خواتم Bluetooth والسماعات وأزرار الوسائط في لوحة المفاتيح تتحكم بالملقّن حتى والنافذة غير نشطة.
+- **التمرير بالصوت**: وضع «التمرير أثناء الكلام» يعمل دون إنترنت وبأي لغة (يتحرك النص أثناء كلامك ويتوقف حين
+  تصمت، مع عتبة قابلة للضبط فوق ضوضاء المكان)، ووضع «متابعة كلماتي» يتعرّف على الكلمات المقروءة ويبقيها عند خط
+  القراءة مع تمييز الكلمة المنطوقة، بمطابقة عربية مرنة (التشكيل والهمزات والتاء المربوطة وأدوات التعريف والعطف) وبدعم
+  اللهجات العربية والإنجليزية.
 - **تطبيق قابل للتثبيت يعمل دون إنترنت (PWA)**: الواجهة وخط Cairo مخزّنان مسبقاً، وكل خط يُستخدم مرة يبقى متاحاً،
   مع زر لإتاحة كل الخطوط دون إنترنت، وإشعار التحديث لا يظهر أثناء القراءة.
 
@@ -73,6 +77,11 @@ font uploads.
   link; up to 3 phones, automatic reconnection, optional private PeerJS server and TURN servers.
 - **Media buttons**: Bluetooth rings, headsets and keyboard media keys control the prompter, even while
   another window is active.
+- **Voice scrolling**: “Scroll while I speak” works offline in any language (the text moves while you speak
+  and holds when you pause, with an adjustable threshold above the room noise); “Follow my words” uses speech
+  recognition to keep the words you read at the reading line and highlights the word just said, with
+  forgiving Arabic matching (diacritics, hamza and teh-marbuta variants, clitics) and Arabic dialects or
+  English.
 - **Installable offline app (PWA)**: the app shell and the Cairo font are precached, every font you use is
   cached for offline use, and update prompts never interrupt a live read.
 

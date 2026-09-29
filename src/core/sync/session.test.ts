@@ -15,6 +15,8 @@ const IDLE: EngineSnapshot = {
   remainingMs: 60_000,
   countdownMs: null,
   holdMs: null,
+  gate: true,
+  voiceWord: -1,
 };
 
 /** A shared message bus with a manual clock; messages are delivered in order when flushed. */

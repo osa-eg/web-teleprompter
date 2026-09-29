@@ -34,7 +34,7 @@ const STATUS_INTERVAL_MS = 100;
 const FLING_DECAY_S = 0.325;
 const LOOP_PAUSE_MS = 1000;
 /** Angular frequencies of the critically damped spring (higher = snappier). */
-export const SPRING = { seek: 9, wheel: 12, follow: 6 } as const;
+export const SPRING = { seek: 9, wheel: 12, follow: 6, voice: 3.5 } as const;
 /** A follower never extrapolates the leader's motion further than this. */
 const MAX_EXTRAPOLATION_MS = 250;
 
@@ -93,6 +93,9 @@ export class ScrollEngine {
   private readonly frameListeners = new Set<(px: number, pos: number) => void>();
   private destroyed = false;
   private mode: EngineMode = 'lead';
+  /** Voice activity gate (closed: hold while the talent is silent). */
+  private gate = true;
+  private voiceWord = -1;
   private follower: Follower | null = null;
   private forward: ((command: EngineCommand) => void) | null = null;
   private readonly host: EngineHost;
@@ -180,6 +183,21 @@ export class ScrollEngine {
         return this.seekBy(command.pages * this.model.viewportH * 0.8);
       case 'scrollBy':
         return this.wheel(command.lines * this.model.lineHeightPx);
+      case 'voiceGate':
+        this.gate = command.open;
+        return this.touch();
+      case 'voiceTrack':
+        this.voiceWord = command.word;
+        // Speech moves the text only while playing (like the automatic scroll it replaces).
+        if (this.play !== 'playing') return this.touch();
+        return this.seekTo(
+          posToPx(this.model, command.pos) + command.lead * this.model.lineHeightPx,
+          SPRING.voice,
+        );
+      case 'voiceReset':
+        this.gate = true;
+        this.voiceWord = -1;
+        return this.touch();
       case 'jumpBlock':
         return this.jumpAmong(this.model.blockP, command.delta);
       case 'jumpMarker':
@@ -367,6 +385,8 @@ export class ScrollEngine {
       remainingMs: this.remainingMs(now, velocity, max),
       countdownMs: this.countdownEnd !== null ? Math.max(0, this.countdownEnd - now) : null,
       holdMs: this.holdUntil !== null ? Math.max(0, this.holdUntil - now) : null,
+      gate: this.gate,
+      voiceWord: this.voiceWord,
     };
   }
 
@@ -424,6 +444,8 @@ export class ScrollEngine {
       snap.play === 'countdown' ? now + (snap.countdownMs ?? this.config.countdownSec * 1000) : null;
     this.holdUntil = snap.holding ? now + (snap.holdMs ?? 0) : null;
     this.loopAt = null;
+    this.gate = snap.gate;
+    this.voiceWord = snap.voiceWord;
     this.fling = 0;
     this.dragging = false;
     this.spring =
@@ -503,7 +525,13 @@ export class ScrollEngine {
   }
 
   private isAdvancing(): boolean {
-    return this.play === 'playing' && this.holdUntil === null && this.loopAt === null && !this.dragging;
+    return (
+      this.play === 'playing' &&
+      this.holdUntil === null &&
+      this.loopAt === null &&
+      !this.dragging &&
+      this.gate
+    );
   }
 
   private followStep(now: number, dt: number): void {
@@ -661,6 +689,7 @@ export class ScrollEngine {
         remainingMs: leader.remainingMs,
         marker,
         countdown: leader.countdownMs !== null ? Math.max(1, Math.ceil(leader.countdownMs / 1000)) : null,
+        voiceWord: leader.voiceWord,
         t: now,
       };
     }
@@ -675,6 +704,7 @@ export class ScrollEngine {
       remainingMs: this.remainingMs(now, velocity, max),
       marker,
       countdown: this.countdownEnd !== null ? Math.max(1, Math.ceil((this.countdownEnd - now) / 1000)) : null,
+      voiceWord: this.voiceWord,
       t: now,
     };
   }

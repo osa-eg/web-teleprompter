@@ -89,7 +89,8 @@ export const KeymapSchema = z.object({
 });
 
 export const VoiceSchema = z.object({
-  mode: z.enum(['off', 'vad', 'follow']),
+  /** vad: scroll at the set speed while the talent speaks; follow: speech recognition tracks the words. */
+  mode: z.enum(['vad', 'follow']),
   lang: z.string().min(2).max(20),
   vadSensitivityDb: z.number().min(4).max(30),
   lookAheadLines: z.number().min(0).max(3),
@@ -221,7 +222,7 @@ export function createDefaultSettings(lang: UiSettings['lang'] = detectDefaultLa
       keepAwake: true,
     },
     keymap: { preset: 'keyboard', overrides: {} },
-    voice: { mode: 'off', lang: 'ar-SA', vadSensitivityDb: 12, lookAheadLines: 0.5 },
+    voice: { mode: 'vad', lang: 'ar-SA', vadSensitivityDb: 12, lookAheadLines: 0.5 },
     remote: {
       remoteBaseUrl: '',
       peerHost: '',

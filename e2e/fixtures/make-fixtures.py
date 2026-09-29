@@ -41,4 +41,29 @@ parts = {
 with zipfile.ZipFile('sample.docx', 'w', zipfile.ZIP_DEFLATED) as z:
     for name, content in parts.items():
         z.writestr(name, content.encode('utf-8'))
+# Fake microphone input for the voice-activity test: 2 s of a voice-like tone, then 2 s of quiet
+# room noise (Chromium loops the file with --use-file-for-fake-audio-capture).
+import math
+import random
+import struct
+import wave
+
+RATE = 16000
+random.seed(7)
+frames = bytearray()
+for n in range(RATE * 4):
+    t = n / RATE
+    if t < 2:
+        # 180 Hz fundamental with harmonics, like a voice, around -12 dBFS.
+        value = 0.25 * (math.sin(2 * math.pi * 180 * t) + 0.5 * math.sin(2 * math.pi * 360 * t)
+                        + 0.25 * math.sin(2 * math.pi * 540 * t))
+    else:
+        value = random.uniform(-0.002, 0.002)  # about -60 dBFS
+    frames += struct.pack('<h', int(max(-1, min(1, value)) * 32767))
+with wave.open('tone-silence.wav', 'wb') as w:
+    w.setnchannels(1)
+    w.setsampwidth(2)
+    w.setframerate(RATE)
+    w.writeframes(bytes(frames))
+
 print('fixtures written')

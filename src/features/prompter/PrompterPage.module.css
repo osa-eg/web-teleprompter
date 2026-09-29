@@ -23,3 +23,12 @@
   min-block-size: 100dvh;
   color: var(--text-muted);
 }
+
+/* Voice status in a display window (no operator bar there). */
+.displayVoice {
+  position: absolute;
+  inset-block-start: var(--space-3);
+  inset-inline-start: var(--space-3);
+  z-index: 25;
+  font-family: var(--font-ui);
+}

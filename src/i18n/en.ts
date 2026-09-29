@@ -136,6 +136,7 @@ export const en = {
   'action.delete': 'Delete',
   'action.undo': 'Undo',
   'action.back': 'Back',
+  'action.cancel': 'Cancel',
   'action.close': 'Close',
   'action.reload': 'Reload',
   'action.reset': 'Reset',
@@ -248,6 +249,39 @@ export const en = {
   'display.otherScreenFailed':
     'Couldn’t use the other screen. Move this window there and choose “Full screen”.',
   'display.stayWindowed': 'Keep as a window',
+
+  'voice.title': 'Voice control',
+  'voice.mode': 'How your voice moves the text',
+  'voice.mode.vad': 'Scroll while I speak',
+  'voice.mode.follow': 'Follow my words',
+  'voice.modeHint.vad':
+    'Works offline, in every browser and language: the text moves at the set speed while you speak and holds when you pause.',
+  'voice.modeHint.follow':
+    'Speech recognition finds the words you read and keeps them at the reading line. Needs Chrome, Edge or Safari and an internet connection.',
+  'voice.followUnavailable':
+    'This browser has no speech recognition. Use “Scroll while I speak”, or open the prompter in Chrome, Edge or Safari.',
+  'voice.lang': 'Language you speak',
+  'voice.langHint':
+    'Pick your variety of Arabic; Saudi Arabia (ar-SA) is the closest to Modern Standard Arabic.',
+  'voice.sensitivity': 'Voice threshold above background noise',
+  'voice.sensitivityHint': 'Raise it in noisy rooms; lower it if the text does not start when you speak.',
+  'voice.db': '{db} dB',
+  'voice.lookAhead': 'Keep the text ahead of your voice',
+  'voice.lines': { zero: 'None', one: '{count} line', other: '{count} lines' },
+  'voice.howTo':
+    'Turn it on with the microphone button or the V key, then press play: the text follows your voice.',
+  'voice.status.starting': 'Starting the microphone…',
+  'voice.status.listening': 'Listening',
+  'voice.status.speaking': 'Hearing you',
+  'voice.status.unsupported': 'No speech recognition in this browser. Use “Scroll while I speak”.',
+  'voice.status.denied': 'The microphone is blocked. Allow it in the browser’s site settings.',
+  'voice.status.network': 'Speech recognition needs the internet. Retrying…',
+  'voice.status.error': 'Voice control stopped because of an error.',
+  'voice.consentTitle': 'Speech recognition',
+  'voice.consentText':
+    'To follow your words, the browser sends your voice to its speech service (Google in Chrome, Microsoft in Edge, Apple in Safari) to turn it into text. This app stores nothing.',
+  'voice.consentAccept': 'Continue',
+  'voice.consentUseVad': 'Use “Scroll while I speak”',
 
   'remote.title': 'Phone remote',
   'remote.intro': 'Control the prompter from a phone: scan the code with its camera. Nothing to install.',

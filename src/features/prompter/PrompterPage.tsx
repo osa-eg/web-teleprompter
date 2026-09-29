@@ -19,6 +19,10 @@ import { useScriptFonts } from '@/features/fonts/useScriptFonts';
 import { useRemoteHostInfo } from '@/features/remote/hostService';
 import { RemotePanel } from '@/features/remote/RemotePanel';
 import { useRemoteController } from '@/features/remote/useRemoteController';
+import { SpeechConsentDialog } from '@/features/voice/SpeechConsentDialog';
+import { giveSpeechConsent, hasSpeechConsent, useVoiceControl } from '@/features/voice/useVoiceControl';
+import { VoiceIndicator } from '@/features/voice/VoiceIndicator';
+import { speechRecognitionAvailable } from '@/features/voice/voiceLanguages';
 import { useFormat, useT } from '@/i18n';
 import type { Script } from '@/storage/types';
 import { useLibrary } from '@/stores/library';
@@ -164,6 +168,8 @@ function Prompter({ script, role, sid }: PrompterProps) {
   const [panel, setPanel] = useState<Panel | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const [overlayDismissed, setOverlayDismissed] = useState(false);
+  const [voiceOn, setVoiceOn] = useState(false);
+  const [consentOpen, setConsentOpen] = useState(false);
   const lastGuideStyle = useRef(appearance.guide.style === 'none' ? 'band+arrows' : appearance.guide.style);
   const fullscreen = useFullscreen();
   const playing = status.play === 'playing' || status.play === 'countdown';
@@ -218,6 +224,25 @@ function Prompter({ script, role, sid }: PrompterProps) {
   // Mirror keys act on the window the talent reads: the display window when there is one.
   const mirrorTarget = isDisplay || displayConnected ? 'display' : 'view';
 
+  const voice = useVoiceControl({
+    active: voiceOn,
+    settings: {
+      mode: settings.voice.mode,
+      lang: settings.voice.lang,
+      sensitivityDb: settings.voice.vadSensitivityDb,
+      lookAheadLines: settings.voice.lookAheadLines,
+    },
+    doc,
+    engine,
+  });
+  const toggleVoice = useCallback(() => {
+    if (voiceOn) return setVoiceOn(false);
+    const { mode } = useSettings.getState().settings.voice;
+    // Speech recognition sends audio to the browser's cloud service: ask once first.
+    if (mode === 'follow' && speechRecognitionAvailable() && !hasSpeechConsent()) return setConsentOpen(true);
+    setVoiceOn(true);
+  }, [voiceOn]);
+
   const run = useCallback(
     (command: Command) => {
       const current = useSettings.getState().settings;
@@ -259,6 +284,7 @@ function Prompter({ script, role, sid }: PrompterProps) {
           if (isDisplay) return;
           return navigate(`/s/${script.id}/edit`);
         case 'toggleVoice':
+          return toggleVoice();
         case 'toggleCamera':
         case 'toggleRecording':
           return;
@@ -266,7 +292,7 @@ function Prompter({ script, role, sid }: PrompterProps) {
           if (isEngineCommand(command)) engine.dispatch(command);
       }
     },
-    [engine, patch, fullscreen, navigate, script.id, mirrorTarget, isDisplay],
+    [engine, patch, fullscreen, navigate, script.id, mirrorTarget, isDisplay, toggleVoice],
   );
 
   useKeymap(keymap, (action) => run(actionCommand(action)));
@@ -358,6 +384,14 @@ function Prompter({ script, role, sid }: PrompterProps) {
           panel={panel}
           displayConnected={displayConnected}
           remoteDevices={remoteInfo.devices.length}
+          voiceOn={voiceOn}
+          voiceStatus={
+            <VoiceIndicator
+              status={voice.status}
+              level={voice.level}
+              showMeter={settings.voice.mode === 'vad'}
+            />
+          }
           onCommand={run}
           onPanel={(next) => setPanel((open) => (open === next ? null : next))}
         />
@@ -378,6 +412,31 @@ function Prompter({ script, role, sid }: PrompterProps) {
           onClose={() => setPanel(null)}
         />
       )}
+      {isDisplay && voiceOn && (
+        <div className={styles.displayVoice}>
+          <VoiceIndicator
+            status={voice.status}
+            level={voice.level}
+            showMeter={settings.voice.mode === 'vad'}
+          />
+        </div>
+      )}
+
+      <SpeechConsentDialog
+        open={consentOpen}
+        onAccept={() => {
+          giveSpeechConsent();
+          setConsentOpen(false);
+          setVoiceOn(true);
+        }}
+        onUseVad={() => {
+          patch('voice', { mode: 'vad' });
+          setConsentOpen(false);
+          setVoiceOn(true);
+        }}
+        onCancel={() => setConsentOpen(false)}
+      />
+
       {panel === 'remote' && <RemotePanel onClose={() => setPanel(null)} />}
       {panel === 'display' && sid && (
         <DisplayPanel

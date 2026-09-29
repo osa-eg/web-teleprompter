@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import type { ReactNode, RefObject } from 'react';
+import { useEffect, type ReactNode, type RefObject } from 'react';
 import type { EngineStatus } from '@/core/engine/types';
 import type { ScriptDoc } from '@/core/script/ast';
 import type { Appearance, ViewSettings } from '@/stores/settingsSchema';
@@ -71,6 +71,15 @@ export function Stage({
   notice,
   className,
 }: StageProps) {
+  const spoken = status.voiceWord;
+  // Voice following: mark the word just said (DOM class toggle, no re-render of the script).
+  useEffect(() => {
+    if (spoken < 0) return;
+    const word = contentRef.current?.querySelector(`[data-w="${spoken}"]`);
+    word?.classList.add('is-spoken');
+    return () => word?.classList.remove('is-spoken');
+  }, [spoken, contentRef, doc]);
+
   return (
     <div
       className={clsx(styles.stage, className)}

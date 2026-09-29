@@ -3,6 +3,7 @@ import {
   HardDrive,
   Info,
   Keyboard,
+  Mic,
   Monitor,
   Palette,
   Play,
@@ -19,7 +20,14 @@ import { AboutPanel } from './AboutPanel';
 import { KeymapEditor } from './KeymapEditor';
 import { PresetsPanel } from './PresetsPanel';
 import { RemoteSettings } from './RemoteSettings';
-import { ColorsSection, GuideSection, MirrorSection, PlaybackSection, TextSection } from './sections';
+import {
+  ColorsSection,
+  GuideSection,
+  MirrorSection,
+  PlaybackSection,
+  TextSection,
+  VoiceSection,
+} from './sections';
 import { StoragePanel } from './StoragePanel';
 import styles from './SettingsPage.module.css';
 
@@ -105,6 +113,7 @@ const SECTIONS: SectionDef[] = [
     icon: <Play size={18} />,
     render: () => <PlaybackSection />,
   },
+  { id: 'voice', label: 'voice.title', icon: <Mic size={18} />, render: () => <VoiceSection /> },
   {
     id: 'mirror',
     label: 'qs.mirror',

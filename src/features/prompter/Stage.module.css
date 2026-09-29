@@ -185,3 +185,9 @@
     opacity: 0.3;
   }
 }
+
+/* The word the talent just said (voice following). */
+.content :global(.is-spoken) {
+  color: var(--tp-guide);
+  transition: color 0.15s;
+}

@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { defineConfig, devices } from '@playwright/test';
 
 const PORT = 4173;
@@ -35,6 +36,24 @@ export default defineConfig({
         },
       },
       testIgnore: [/pwa\.spec\.ts/],
+      grepInvert: /@vad/,
+    },
+    {
+      // A fake microphone that plays a voice-like tone, then quiet, in a loop.
+      name: 'voice',
+      use: {
+        ...devices['Desktop Chrome'],
+        permissions: ['microphone'],
+        launchOptions: {
+          env,
+          args: [
+            '--use-fake-ui-for-media-stream',
+            '--use-fake-device-for-media-stream',
+            `--use-file-for-fake-audio-capture=${path.resolve('e2e/fixtures/tone-silence.wav')}`,
+          ],
+        },
+      },
+      grep: /@vad/,
     },
     {
       name: 'mobile',

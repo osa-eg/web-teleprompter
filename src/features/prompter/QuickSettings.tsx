@@ -6,6 +6,7 @@ import {
   MirrorSection,
   PlaybackSection,
   TextSection,
+  VoiceSection,
 } from '@/features/settings/sections';
 import { Drawer } from './Drawer';
 
@@ -24,6 +25,7 @@ export function QuickSettings({ script, rtlDominant, onClose }: QuickSettingsPro
       <GuideSection />
       <ColorsSection />
       <PlaybackSection />
+      <VoiceSection />
       <MirrorSection />
     </Drawer>
   );

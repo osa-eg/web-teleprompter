@@ -20,6 +20,8 @@ export const EngineSnapshotSchema = z.object({
   remainingMs: ms,
   countdownMs: ms.nullable(),
   holdMs: ms.nullable(),
+  gate: z.boolean(),
+  voiceWord: z.number().int().min(-1).max(10_000_000),
 });
 
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;

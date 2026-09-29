@@ -9,6 +9,8 @@ import {
   FlipVertical2,
   Keyboard,
   Maximize,
+  Mic,
+  MicOff,
   Minimize,
   Minus,
   MonitorUp,
@@ -19,6 +21,7 @@ import {
   SlidersHorizontal,
   Smartphone,
 } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { Command } from '@/core/commands/types';
 import type { Marker } from '@/core/script/ast';
@@ -42,6 +45,9 @@ interface OperatorBarProps {
   panel: Panel | null;
   displayConnected: boolean;
   remoteDevices?: number;
+  voiceOn?: boolean;
+  /** Voice status shown next to the microphone button. */
+  voiceStatus?: ReactNode;
   onCommand: (command: Command) => void;
   onPanel: (panel: Panel) => void;
 }
@@ -58,6 +64,8 @@ export function OperatorBar({
   panel,
   displayConnected,
   remoteDevices = 0,
+  voiceOn = false,
+  voiceStatus,
   onCommand,
   onPanel,
 }: OperatorBarProps) {
@@ -156,6 +164,15 @@ export function OperatorBar({
         </div>
 
         <div className={clsx(styles.group, styles.tools)}>
+          {voiceStatus}
+          <IconButton
+            label={t('voice.title')}
+            pressed={voiceOn}
+            data-testid="voice-button"
+            onClick={() => onCommand({ type: 'toggleVoice' })}
+          >
+            {voiceOn ? <Mic size={20} aria-hidden /> : <MicOff size={20} aria-hidden />}
+          </IconButton>
           <IconButton
             label={t('prompter.fontSmaller')}
             onClick={() => onCommand({ type: 'nudgeFontSize', steps: -1 })}

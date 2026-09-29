@@ -64,6 +64,8 @@ export interface EngineStatus {
   marker: number;
   /** Seconds left in the countdown, or null. */
   countdown: number | null;
+  /** Token of the word the talent just said (speech following), or -1. */
+  voiceWord: number;
   /** performance.now() when the snapshot was taken. */
   t: number;
 }
@@ -88,6 +90,10 @@ export interface EngineSnapshot {
   countdownMs: number | null;
   /** Milliseconds left in a timed cue, or null. */
   holdMs: number | null;
+  /** Voice activity gate: while false, playback holds (the talent is silent). */
+  gate: boolean;
+  /** Token of the word the talent just said (speech following), or -1. */
+  voiceWord: number;
 }
 
 export type EngineMode = 'lead' | 'follow';

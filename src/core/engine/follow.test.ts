@@ -194,3 +194,47 @@ describe('ScrollEngine handover', () => {
     expect(engine.getPos()).toBeGreaterThan(3);
   });
 });
+
+describe('ScrollEngine voice control', () => {
+  it('holds while the voice gate is closed', () => {
+    const host = new FakeHost();
+    const engine = makeEngine(host, LEADER);
+    engine.startPlay();
+    engine.dispatch({ type: 'voiceGate', open: false });
+    host.run(2000);
+    expect(engine.getPx()).toBe(0);
+    expect(engine.getStatus().play).toBe('playing');
+    engine.dispatch({ type: 'voiceGate', open: true });
+    host.run(1000);
+    expect(engine.getPx()).toBeCloseTo(24, 0);
+  });
+
+  it('follows speech targets while playing and reports the spoken word', () => {
+    const host = new FakeHost();
+    const engine = makeEngine(host, LEADER);
+    engine.dispatch({ type: 'voiceTrack', pos: 50, lead: 0.5, word: 49 });
+    host.run(1000);
+    expect(engine.getPx()).toBe(0); // not playing: the text stays
+    expect(engine.getStatus().voiceWord).toBe(49);
+    engine.startPlay();
+    engine.dispatch({ type: 'voiceGate', open: false });
+    engine.dispatch({ type: 'voiceTrack', pos: 50, lead: 0.5, word: 49 });
+    host.run(3000);
+    expect(engine.getPx()).toBeCloseTo(50 * 12 + 30, 0);
+    engine.dispatch({ type: 'voiceReset' });
+    expect(engine.getStatus().voiceWord).toBe(-1);
+  });
+
+  it('hands the gate over with playback', () => {
+    const { host, leader, follower, unlink } = pair();
+    leader.startPlay();
+    leader.dispatch({ type: 'voiceGate', open: false });
+    host.run(500);
+    expect(follower.getStatus().play).toBe('playing');
+    unlink();
+    follower.lead(leader.exportSnapshot());
+    const px = follower.getPx();
+    host.run(1000);
+    expect(follower.getPx()).toBeCloseTo(px, 3);
+  });
+});

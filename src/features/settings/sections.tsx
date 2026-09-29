@@ -2,8 +2,10 @@ import { Check } from 'lucide-react';
 import { useT, useFormat } from '@/i18n';
 import type { Script, TextDirSetting } from '@/storage/types';
 import { useLibrary } from '@/stores/library';
-import { useSettings, type Appearance, type Behavior } from '@/stores/settings';
+import { useSettings, type Appearance, type Behavior, type VoiceSettings } from '@/stores/settings';
 import { Choice, ColorField, Section, Slider, Switch } from '@/ui/controls';
+import { Field, Select } from '@/ui/Field';
+import { languageName, speechRecognitionAvailable, VOICE_LANGUAGES } from '@/features/voice/voiceLanguages';
 import { FontField } from '@/features/fonts/FontField';
 import { effectiveLineHeight, weightOptions } from '@/features/fonts/fontSettings';
 import { COLOR_PRESETS } from './colorPresets';
@@ -349,6 +351,74 @@ export function MirrorSection({ target = 'view', title }: { target?: 'view' | 'd
         checked={mirror.mirrorV}
         onChange={(mirrorV) => patch(target, { mirrorV })}
       />
+    </Section>
+  );
+}
+
+export function VoiceSection() {
+  const t = useT();
+  const voice = useSettings((s) => s.settings.voice);
+  const uiLang = useSettings((s) => s.settings.ui.lang);
+  const patch = useSettings((s) => s.patch);
+  const set = (value: Partial<VoiceSettings>) => patch('voice', value);
+  const codes: string[] = [...VOICE_LANGUAGES];
+  if (!codes.includes(voice.lang)) codes.push(voice.lang);
+
+  return (
+    <Section title={t('voice.title')}>
+      <p className={styles.hint}>{t('voice.howTo')}</p>
+      <Choice<VoiceSettings['mode']>
+        label={t('voice.mode')}
+        value={voice.mode}
+        onChange={(mode) => set({ mode })}
+        options={[
+          { value: 'vad', label: t('voice.mode.vad') },
+          { value: 'follow', label: t('voice.mode.follow') },
+        ]}
+        hint={
+          voice.mode === 'vad'
+            ? t('voice.modeHint.vad')
+            : speechRecognitionAvailable()
+              ? t('voice.modeHint.follow')
+              : t('voice.followUnavailable')
+        }
+      />
+      {voice.mode === 'vad' ? (
+        <Slider
+          label={t('voice.sensitivity')}
+          value={voice.vadSensitivityDb}
+          min={4}
+          max={30}
+          onChange={(vadSensitivityDb) => set({ vadSensitivityDb })}
+          format={(db) => t('voice.db', { db })}
+          hint={t('voice.sensitivityHint')}
+        />
+      ) : (
+        <>
+          <Field label={t('voice.lang')} hint={t('voice.langHint')}>
+            {(id) => (
+              <Select
+                id={id}
+                value={voice.lang}
+                onChange={(lang) => set({ lang })}
+                options={codes.map((code) => ({
+                  value: code,
+                  label: `${languageName(code, uiLang)} (${code})`,
+                }))}
+              />
+            )}
+          </Field>
+          <Slider
+            label={t('voice.lookAhead')}
+            value={voice.lookAheadLines}
+            min={0}
+            max={2}
+            step={0.5}
+            onChange={(lookAheadLines) => set({ lookAheadLines })}
+            format={(lines) => t('voice.lines', { count: lines })}
+          />
+        </>
+      )}
     </Section>
   );
 }
