@@ -75,6 +75,7 @@ export const en = {
   'settings.presets': 'Saved looks',
   'settings.storage': 'Storage & backup',
   'settings.about': 'About',
+  'settings.remote': 'Remote control',
   'settings.resetAll': 'Reset all settings',
   'settings.resetDone': 'Settings were reset.',
 
@@ -224,6 +225,80 @@ export const en = {
   'prompter.cue': 'Pause',
   'prompter.cueSeconds': '{seconds} s',
   'prompter.tapToStart': 'Press Space or tap ▶ to start',
+
+  'display.title': 'Display window',
+  'display.open': 'Open display window',
+  'display.show': 'Show display window',
+  'display.close': 'Close display window',
+  'display.intro':
+    'Show the text in a second window — on the teleprompter monitor, for example. It scrolls in step with this window and has its own mirroring.',
+  'display.connected': 'Display window connected',
+  'display.notConnected': 'No display window is open.',
+  'display.blocked': 'The browser blocked the new window. Allow pop-ups for this site, then try again.',
+  'display.fullscreenHint':
+    'Then choose “Full screen” in the display window. With two screens, it can fill the other one.',
+  'display.mirror': 'Mirroring of the display window',
+  'display.linked': 'Connected to the operator window',
+  'display.waiting': 'Waiting for the operator window…',
+  'display.overlayHint':
+    'This window shows the text for the person reading. Move it to the teleprompter screen, then go full screen. Keyboard shortcuts work here too.',
+  'display.fullscreen': 'Full screen',
+  'display.otherScreen': 'Full screen on the other screen',
+  'display.noOtherScreen': 'No other screen was found.',
+  'display.otherScreenFailed':
+    'Couldn’t use the other screen. Move this window there and choose “Full screen”.',
+  'display.stayWindowed': 'Keep as a window',
+
+  'remote.title': 'Phone remote',
+  'remote.intro': 'Control the prompter from a phone: scan the code with its camera. Nothing to install.',
+  'remote.start': 'Turn on the phone remote',
+  'remote.stop': 'Turn off',
+  'remote.starting': 'Connecting…',
+  'remote.ready': 'Ready — scan the code',
+  'remote.error':
+    'Couldn’t reach the connection service. Check the internet connection, or the server under Settings → Remote control.',
+  'remote.retry': 'Try again',
+  'remote.link': 'Remote control link',
+  'remote.copyLink': 'Copy link',
+  'remote.copied': 'Link copied',
+  'remote.devices': 'Connected phones',
+  'remote.noDevices': 'No phone connected yet.',
+  'remote.disconnect': 'Disconnect',
+  'remote.newLink': 'New link',
+  'remote.newLinkHint': 'Makes the current code stop working and disconnects every phone.',
+  'remote.security':
+    'The code contains a secret key: anyone who has it can control the prompter. The connection between the devices is direct and encrypted.',
+  'remote.qrLabel': 'QR code for the phone remote',
+  'remote.connecting': 'Connecting to the prompter…',
+  'remote.connected': 'Connected',
+  'remote.reconnecting': 'Connection lost. Reconnecting…',
+  'remote.denied': 'This code no longer works. Scan the new code shown by the prompter.',
+  'remote.full': 'Too many phones are connected to this prompter.',
+  'remote.unreachable': 'The prompter can’t be reached. Make sure it’s open with the phone remote turned on.',
+  'remote.invalidLink': 'This link is incomplete. Scan the code shown by the prompter.',
+  'remote.speed': 'Speed',
+  'remote.sections': 'Sections',
+  'remote.prevSection': 'Previous section',
+  'remote.nextSection': 'Next section',
+  'remote.noScript': 'Waiting for the script…',
+  'remote.allowSettings': 'Phones can change the text size and mirroring',
+  'remote.mediaKeys': 'Media buttons (Bluetooth rings, headsets, keyboards)',
+  'remote.mediaKeysHint':
+    'Their play/pause and next/previous buttons control the prompter, even while another window is active. Starts with the first play.',
+  'remote.linkBase': 'Address phones open',
+  'remote.linkBaseHint':
+    'Optional. When the prompter runs on this computer only (localhost), enter an address phones can reach, e.g. http://192.168.1.20:5173/web-teleprompter/',
+  'remote.server': 'Connection server',
+  'remote.serverHint':
+    'Phones find the prompter through a PeerJS server; the control data then goes directly between the devices. Leave the host empty to use the free public server.',
+  'remote.host': 'Host',
+  'remote.port': 'Port',
+  'remote.path': 'Path',
+  'remote.secure': 'Secure connection (HTTPS/WSS)',
+  'remote.iceServers': 'STUN/TURN servers (JSON)',
+  'remote.iceHint':
+    'Only needed on networks that block direct connections, e.g. [{"urls":"turn:turn.example.com:3478","username":"…","credential":"…"}]',
+  'remote.iceInvalid': 'Not valid: enter a JSON list of servers.',
 
   'help.title': 'Keyboard shortcuts',
   'help.hint':

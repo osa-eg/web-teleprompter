@@ -1,5 +1,15 @@
 import clsx from 'clsx';
-import { Info, Keyboard, Monitor, Palette, Play, Save, SlidersHorizontal, HardDrive } from 'lucide-react';
+import {
+  HardDrive,
+  Info,
+  Keyboard,
+  Monitor,
+  Palette,
+  Play,
+  Save,
+  SlidersHorizontal,
+  Smartphone,
+} from 'lucide-react';
 import type { ReactNode } from 'react';
 import { NavLink, useParams } from 'react-router';
 import { useT, type MessageKey } from '@/i18n';
@@ -8,6 +18,7 @@ import { Choice, Section } from '@/ui/controls';
 import { AboutPanel } from './AboutPanel';
 import { KeymapEditor } from './KeymapEditor';
 import { PresetsPanel } from './PresetsPanel';
+import { RemoteSettings } from './RemoteSettings';
 import { ColorsSection, GuideSection, MirrorSection, PlaybackSection, TextSection } from './sections';
 import { StoragePanel } from './StoragePanel';
 import styles from './SettingsPage.module.css';
@@ -52,6 +63,16 @@ function InterfaceSection() {
   );
 }
 
+function MirrorSections() {
+  const t = useT();
+  return (
+    <>
+      <MirrorSection />
+      <MirrorSection target="display" title={t('display.mirror')} />
+    </>
+  );
+}
+
 interface SectionDef {
   id: string;
   label: MessageKey;
@@ -84,12 +105,23 @@ const SECTIONS: SectionDef[] = [
     icon: <Play size={18} />,
     render: () => <PlaybackSection />,
   },
-  { id: 'mirror', label: 'qs.mirror', icon: <Monitor size={18} />, render: () => <MirrorSection /> },
+  {
+    id: 'mirror',
+    label: 'qs.mirror',
+    icon: <Monitor size={18} />,
+    render: () => <MirrorSections />,
+  },
   {
     id: 'keyboard',
     label: 'settings.keyboard',
     icon: <Keyboard size={18} />,
     render: () => <KeymapEditor />,
+  },
+  {
+    id: 'remote',
+    label: 'settings.remote',
+    icon: <Smartphone size={18} />,
+    render: () => <RemoteSettings />,
   },
   { id: 'presets', label: 'settings.presets', icon: <Save size={18} />, render: () => <PresetsPanel /> },
   { id: 'storage', label: 'settings.storage', icon: <HardDrive size={18} />, render: () => <StoragePanel /> },

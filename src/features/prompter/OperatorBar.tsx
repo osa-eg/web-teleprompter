@@ -11,11 +11,13 @@ import {
   Maximize,
   Minimize,
   Minus,
+  MonitorUp,
   Pause,
   Play,
   Plus,
   RotateCcw,
   SlidersHorizontal,
+  Smartphone,
 } from 'lucide-react';
 import { Link } from 'react-router';
 import type { Command } from '@/core/commands/types';
@@ -26,17 +28,22 @@ import type { ViewSettings } from '@/stores/settingsSchema';
 import { IconButton } from '@/ui/Button';
 import styles from './OperatorBar.module.css';
 
+export type Panel = 'settings' | 'display' | 'remote';
+
 interface OperatorBarProps {
   status: EngineStatus;
   wpm: number;
   markers: Marker[];
+  /** Mirroring of the window the talent reads (the display window when one is connected). */
   mirror: ViewSettings;
   hidden: boolean;
   fullscreen: { supported: boolean; active: boolean };
   editorHref: string;
-  settingsOpen: boolean;
+  panel: Panel | null;
+  displayConnected: boolean;
+  remoteDevices?: number;
   onCommand: (command: Command) => void;
-  onToggleSettings: () => void;
+  onPanel: (panel: Panel) => void;
 }
 
 /** Operator controls below the stage (never mirrored). */
@@ -48,9 +55,11 @@ export function OperatorBar({
   hidden,
   fullscreen,
   editorHref,
-  settingsOpen,
+  panel,
+  displayConnected,
+  remoteDevices = 0,
   onCommand,
-  onToggleSettings,
+  onPanel,
 }: OperatorBarProps) {
   const t = useT();
   const fmt = useFormat();
@@ -173,8 +182,30 @@ export function OperatorBar({
           >
             <FlipVertical2 size={20} aria-hidden />
           </IconButton>
-          <IconButton label={t('prompter.settings')} pressed={settingsOpen} onClick={onToggleSettings}>
+          <IconButton
+            label={t('prompter.settings')}
+            pressed={panel === 'settings'}
+            onClick={() => onPanel('settings')}
+          >
             <SlidersHorizontal size={20} aria-hidden />
+          </IconButton>
+          <IconButton
+            label={t('display.title')}
+            pressed={panel === 'display'}
+            className={clsx(displayConnected && styles.linked)}
+            data-testid="display-button"
+            onClick={() => onPanel('display')}
+          >
+            <MonitorUp size={20} aria-hidden />
+          </IconButton>
+          <IconButton
+            label={t('remote.title')}
+            pressed={panel === 'remote'}
+            className={clsx(remoteDevices > 0 && styles.linked)}
+            data-testid="remote-button"
+            onClick={() => onPanel('remote')}
+          >
+            <Smartphone size={20} aria-hidden />
           </IconButton>
           <IconButton label={t('prompter.help')} onClick={() => onCommand({ type: 'help' })}>
             <Keyboard size={20} aria-hidden />

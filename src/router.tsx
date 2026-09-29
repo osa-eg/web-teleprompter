@@ -34,6 +34,14 @@ export const router = createHashRouter([
         path: 's/:id/prompt',
         lazy: async () => ({ Component: (await import('./features/prompter/PrompterPage')).PrompterPage }),
       },
+      {
+        path: 's/:id/display/:sid',
+        lazy: async () => ({ Component: (await import('./features/prompter/PrompterPage')).DisplayPage }),
+      },
+      {
+        path: 'remote',
+        lazy: async () => ({ Component: (await import('./features/remote/RemotePage')).RemotePage }),
+      },
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   },

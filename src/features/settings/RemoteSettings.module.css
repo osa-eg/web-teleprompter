@@ -1,0 +1,33 @@
+.hint {
+  color: var(--text-muted);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.input,
+.textarea {
+  inline-size: 100%;
+  min-block-size: 40px;
+  padding-inline: var(--space-3);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+
+.textarea {
+  padding-block: var(--space-2);
+  resize: vertical;
+}
+
+.textarea[aria-invalid] {
+  border-color: var(--danger);
+}

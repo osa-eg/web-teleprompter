@@ -1,7 +1,16 @@
 import type { EngineCommand } from '../commands/types';
 import { EMPTY_MODEL, lastIndexAtOrBelow, posToPx, pxToPos, snapToDevicePixels } from './layout';
 import { autoVelocity, clampWpm, effectiveWpm } from './speed';
-import type { EngineConfig, EngineHost, EngineStatus, EngineSurface, LayoutModel, PlayState } from './types';
+import type {
+  EngineConfig,
+  EngineHost,
+  EngineMode,
+  EngineSnapshot,
+  EngineStatus,
+  EngineSurface,
+  LayoutModel,
+  PlayState,
+} from './types';
 
 interface Spring {
   target: number;
@@ -9,11 +18,25 @@ interface Spring {
   omega: number;
 }
 
+/** The latest state received from the leading window (follow mode). */
+interface Follower {
+  snap: EngineSnapshot;
+  /** Host time the snapshot arrived. */
+  t: number;
+  /** Scroll velocity when it arrived, used to extrapolate it. */
+  v0: number;
+  /** Velocity of the smoothing spring. */
+  vel: number;
+  settled: boolean;
+}
+
 const STATUS_INTERVAL_MS = 100;
 const FLING_DECAY_S = 0.325;
 const LOOP_PAUSE_MS = 1000;
 /** Angular frequencies of the critically damped spring (higher = snappier). */
-export const SPRING = { seek: 9, wheel: 12, follow: 4 } as const;
+export const SPRING = { seek: 9, wheel: 12, follow: 6 } as const;
+/** A follower never extrapolates the leader's motion further than this. */
+const MAX_EXTRAPOLATION_MS = 250;
 
 export const DEFAULT_ENGINE_CONFIG: EngineConfig = {
   wpm: 120,
@@ -41,6 +64,9 @@ export const browserHost: EngineHost = {
  * displays scroll identically), ramps speed changes smoothly, animates jumps with a critically
  * damped spring, pauses on cues, and writes the offset straight to the DOM through `surface.apply`
  * — React never re-renders per frame. The loop stops whenever nothing moves.
+ *
+ * In follow mode the engine mirrors another window instead: it extrapolates the leader's snapshots
+ * in its own layout, smooths corrections with a spring and forwards local input to the leader.
  */
 export class ScrollEngine {
   private model: LayoutModel = EMPTY_MODEL;
@@ -66,6 +92,9 @@ export class ScrollEngine {
   private readonly listeners = new Set<() => void>();
   private readonly frameListeners = new Set<(px: number, pos: number) => void>();
   private destroyed = false;
+  private mode: EngineMode = 'lead';
+  private follower: Follower | null = null;
+  private forward: ((command: EngineCommand) => void) | null = null;
   private readonly host: EngineHost;
   private readonly surface: EngineSurface;
 
@@ -124,6 +153,10 @@ export class ScrollEngine {
   // ── Commands ─────────────────────────────────────────────────────────────────
 
   dispatch(command: EngineCommand): void {
+    if (this.mode === 'follow') {
+      this.forward?.(command);
+      return;
+    }
     switch (command.type) {
       case 'play':
         return this.startPlay();
@@ -145,6 +178,8 @@ export class ScrollEngine {
         return this.seekBy(command.lines * this.model.lineHeightPx);
       case 'nudgePages':
         return this.seekBy(command.pages * this.model.viewportH * 0.8);
+      case 'scrollBy':
+        return this.wheel(command.lines * this.model.lineHeightPx);
       case 'jumpBlock':
         return this.jumpAmong(this.model.blockP, command.delta);
       case 'jumpMarker':
@@ -163,6 +198,7 @@ export class ScrollEngine {
 
   /** Starts (or resumes) playback. From the top or the end it runs the countdown first. */
   startPlay(): void {
+    if (this.mode === 'follow') return this.forward?.({ type: 'play' });
     const now = this.host.now();
     if (this.play === 'ended') {
       this.px = 0;
@@ -184,6 +220,12 @@ export class ScrollEngine {
   }
 
   pause(): void {
+    if (this.mode === 'follow') return this.forward?.({ type: 'pause' });
+    this.stopPlayback();
+    this.touch();
+  }
+
+  private stopPlayback(): void {
     if (this.play === 'countdown') {
       this.play = this.elapsedMs > 0 ? 'paused' : 'idle';
       this.countdownEnd = null;
@@ -194,11 +236,11 @@ export class ScrollEngine {
     }
     this.holdUntil = null;
     this.loopAt = null;
-    this.touch();
   }
 
   /** Stops and returns to the top immediately. */
   reset(): void {
+    if (this.mode === 'follow') return this.forward?.({ type: 'reset' });
     this.play = 'idle';
     this.px = 0;
     this.v = 0;
@@ -235,6 +277,7 @@ export class ScrollEngine {
 
   /** Mouse-wheel / trackpad scrolling. */
   wheel(deltaPx: number): void {
+    if (this.mode === 'follow') return this.forwardScroll(deltaPx);
     const base = this.spring ? this.spring.target : this.px;
     this.fling = 0;
     this.spring = { target: this.clamp(base + deltaPx), vel: this.spring?.vel ?? 0, omega: SPRING.wheel };
@@ -242,6 +285,7 @@ export class ScrollEngine {
   }
 
   dragStart(): void {
+    if (this.mode === 'follow') return;
     this.dragging = true;
     this.spring = null;
     this.fling = 0;
@@ -249,6 +293,7 @@ export class ScrollEngine {
   }
 
   dragMove(deltaPx: number): void {
+    if (this.mode === 'follow') return this.forwardScroll(deltaPx);
     if (!this.dragging) return;
     this.moveTo(this.clamp(this.px + deltaPx), false);
     this.render();
@@ -257,6 +302,8 @@ export class ScrollEngine {
 
   /** Ends a drag, continuing with an exponentially decaying fling. */
   dragEnd(velocityPxPerSec = 0): void {
+    // A fling travels velocity × decay time in total.
+    if (this.mode === 'follow') return this.forwardScroll(velocityPxPerSec * FLING_DECAY_S);
     if (!this.dragging) return;
     this.dragging = false;
     this.fling = Math.max(-6000, Math.min(6000, velocityPxPerSec));
@@ -265,6 +312,7 @@ export class ScrollEngine {
 
   /** Moves to a token position immediately (e.g. to resume where the reader left off). */
   jumpToPos(pos: number): void {
+    if (this.mode === 'follow') return this.forward?.({ type: 'seekPos', pos });
     this.seekTo(posToPx(this.model, pos), SPRING.seek, false);
   }
 
@@ -278,11 +326,10 @@ export class ScrollEngine {
   }
 
   /**
-   * Stops all motion and the frame loop without destroying the engine (used when the view unmounts
-   * or is hidden; any later command restarts it).
+   * Stops all motion and the frame loop without destroying the engine or changing the play state
+   * (used when the view unmounts; any later command or relayout restarts it).
    */
   halt(): void {
-    if (this.play === 'playing' || this.play === 'countdown') this.pause();
     this.v = 0;
     this.spring = null;
     this.fling = 0;
@@ -290,6 +337,131 @@ export class ScrollEngine {
     if (this.rafId !== null) this.host.caf(this.rafId);
     this.rafId = null;
     this.lastFrame = null;
+  }
+
+  // ── Multi-window ─────────────────────────────────────────────────────────────
+
+  getMode(): EngineMode {
+    return this.mode;
+  }
+
+  /** Where commands and scrolling go while following another window. */
+  setForwarder(forward: ((command: EngineCommand) => void) | null): void {
+    this.forward = forward;
+  }
+
+  /** Layout-independent playback state (while following: the leader's, extrapolated to now). */
+  exportSnapshot(): EngineSnapshot {
+    const now = this.host.now();
+    if (this.mode === 'follow' && this.follower) return this.extrapolate(this.follower, now);
+    const max = this.maxPx();
+    const velocity = autoVelocity(this.model, this.config, max);
+    return {
+      play: this.play,
+      holding: this.holdUntil !== null,
+      moving: this.isAdvancing(),
+      pos: pxToPos(this.model, this.px),
+      seekPos: this.spring ? pxToPos(this.model, this.spring.target) : null,
+      wpm: Math.round(effectiveWpm(velocity, this.model, this.config)),
+      elapsedMs: this.elapsedMs,
+      remainingMs: this.remainingMs(now, velocity, max),
+      countdownMs: this.countdownEnd !== null ? Math.max(0, this.countdownEnd - now) : null,
+      holdMs: this.holdUntil !== null ? Math.max(0, this.holdUntil - now) : null,
+    };
+  }
+
+  /**
+   * Mirrors the window that leads playback. Call it with every snapshot received from the leader;
+   * the engine extrapolates between them and smooths corrections.
+   */
+  follow(snap: EngineSnapshot): void {
+    if (this.destroyed) return;
+    const now = this.host.now();
+    if (this.mode === 'lead') {
+      this.mode = 'follow';
+      this.spring = null;
+      this.fling = 0;
+      this.dragging = false;
+      this.countdownEnd = null;
+      this.holdUntil = null;
+      this.loopAt = null;
+    }
+    const target = this.clamp(posToPx(this.model, snap.pos));
+    const first = this.follower === null;
+    this.follower = { snap, t: now, v0: this.v, vel: this.follower?.vel ?? 0, settled: false };
+    // Large jumps (a reset, a jump far away, the first snapshot) are shown immediately.
+    if (first || Math.abs(target - this.px) > Math.max(this.model.viewportH, 1) * 1.5) {
+      this.px = target;
+      this.follower.vel = 0;
+      this.render();
+    }
+    this.touch();
+  }
+
+  /**
+   * Takes over playback, continuing from `snap` (another window's state) or, when following, from
+   * the last state received. `pause` stops playback at the handed-over position.
+   */
+  lead(snap: EngineSnapshot | null = null, options: { pause?: boolean } = {}): void {
+    if (this.destroyed) return;
+    const now = this.host.now();
+    const wasFollowing = this.mode === 'follow';
+    const source = snap ?? (this.follower ? this.extrapolate(this.follower, now) : null);
+    this.mode = 'lead';
+    this.follower = null;
+    if (source) this.adopt(source, now, wasFollowing);
+    if (options.pause) this.stopPlayback();
+    this.touch();
+  }
+
+  private adopt(snap: EngineSnapshot, now: number, wasFollowing: boolean): void {
+    const target = this.clamp(posToPx(this.model, snap.pos));
+    // A follower is already (almost) there: keep its offset to avoid a visible jump.
+    if (!wasFollowing || Math.abs(target - this.px) > this.model.lineHeightPx) this.px = target;
+    this.play = snap.play;
+    this.elapsedMs = snap.elapsedMs;
+    this.countdownEnd =
+      snap.play === 'countdown' ? now + (snap.countdownMs ?? this.config.countdownSec * 1000) : null;
+    this.holdUntil = snap.holding ? now + (snap.holdMs ?? 0) : null;
+    this.loopAt = null;
+    this.fling = 0;
+    this.dragging = false;
+    this.spring =
+      snap.seekPos !== null
+        ? { target: this.clamp(posToPx(this.model, snap.seekPos)), vel: 0, omega: SPRING.seek }
+        : null;
+    if (!wasFollowing) this.v = snap.moving ? autoVelocity(this.model, this.config, this.maxPx()) : 0;
+    // Cues and markers the leader already passed (with some slack for layout differences).
+    const passed = this.px + this.model.lineHeightPx * 0.75;
+    this.consumedCues.clear();
+    this.consumedMarkers.clear();
+    this.model.cueP.forEach((p, i) => p <= passed && this.consumedCues.add(i));
+    this.model.markerP.forEach((p, i) => p <= passed && this.consumedMarkers.add(i));
+    this.appliedPx = Number.NaN;
+    this.render();
+  }
+
+  /** The leader's snapshot moved forward to `now` (bounded). */
+  private extrapolate(follower: Follower, now: number): EngineSnapshot {
+    const { snap } = follower;
+    const age = Math.max(0, now - follower.t);
+    const moved = snap.moving ? Math.min(age, MAX_EXTRAPOLATION_MS) : 0;
+    const pos = snap.moving
+      ? pxToPos(this.model, posToPx(this.model, snap.pos) + (follower.v0 * moved) / 1000)
+      : snap.pos;
+    return {
+      ...snap,
+      pos,
+      elapsedMs: snap.elapsedMs + (snap.play === 'playing' ? age : 0),
+      remainingMs: Math.max(0, snap.remainingMs - (snap.moving ? age : 0)),
+      countdownMs: snap.countdownMs !== null ? Math.max(0, snap.countdownMs - age) : null,
+      holdMs: snap.holdMs !== null ? Math.max(0, snap.holdMs - age) : null,
+    };
+  }
+
+  private forwardScroll(deltaPx: number): void {
+    if (deltaPx === 0) return;
+    this.forward?.({ type: 'scrollBy', lines: deltaPx / Math.max(this.model.lineHeightPx, 1) });
   }
 
   destroy(): void {
@@ -309,6 +481,57 @@ export class ScrollEngine {
     const dt = this.lastFrame === null ? 0 : Math.min(now - this.lastFrame, 100) / 1000;
     this.lastFrame = now;
 
+    if (this.mode === 'follow') this.followStep(now, dt);
+    else this.leadStep(now, dt);
+
+    this.render();
+    if (this.statusDirty || now - this.lastEmit >= STATUS_INTERVAL_MS) this.emit(now);
+
+    if (this.needsFrame()) {
+      this.schedule();
+    } else {
+      this.lastFrame = null;
+      this.emit(now);
+    }
+  };
+
+  /** Speed ramps exponentially toward the target (τ = rampMs / 3). */
+  private ramp(vTarget: number, dt: number): void {
+    const tau = Math.max(this.config.rampMs, 1) / 3000;
+    this.v += (vTarget - this.v) * (1 - Math.exp(-dt / tau));
+    if (vTarget === 0 && Math.abs(this.v) < 0.5) this.v = 0;
+  }
+
+  private isAdvancing(): boolean {
+    return this.play === 'playing' && this.holdUntil === null && this.loopAt === null && !this.dragging;
+  }
+
+  private followStep(now: number, dt: number): void {
+    const f = this.follower;
+    if (!f) return;
+    const age = Math.max(0, now - f.t);
+    // Keep scrolling with the leader, but coast to a stop when its snapshots stop coming.
+    const fresh = f.snap.moving && age <= MAX_EXTRAPOLATION_MS * 2;
+    this.ramp(fresh ? autoVelocity(this.model, this.config, this.maxPx()) : 0, dt);
+    const ahead = f.snap.moving ? (f.v0 * Math.min(age, MAX_EXTRAPOLATION_MS)) / 1000 : 0;
+    const target = this.clamp(posToPx(this.model, f.snap.pos) + ahead);
+    // Critically damped spring toward the extrapolated target, in a frame moving with the scroll.
+    const w = SPRING.follow;
+    const x = this.px + this.v * dt - target;
+    const e = Math.exp(-w * dt);
+    const nx = (x + (f.vel + w * x) * dt) * e;
+    f.vel = (f.vel - w * (f.vel + w * x) * dt) * e;
+    if (Math.abs(nx) < 0.3 && Math.abs(f.vel) < 3) {
+      this.px = target;
+      f.vel = 0;
+      f.settled = true;
+    } else {
+      this.px = this.clamp(target + nx);
+      f.settled = false;
+    }
+  }
+
+  private leadStep(now: number, dt: number): void {
     if (this.play === 'countdown' && this.countdownEnd !== null && now >= this.countdownEnd) {
       this.play = 'playing';
       this.countdownEnd = null;
@@ -328,11 +551,8 @@ export class ScrollEngine {
     }
 
     const playing = this.play === 'playing';
-    const advancing = playing && this.holdUntil === null && this.loopAt === null && !this.dragging;
-    const vTarget = advancing ? autoVelocity(this.model, this.config, this.maxPx()) : 0;
-    const tau = Math.max(this.config.rampMs, 1) / 3000;
-    this.v += (vTarget - this.v) * (1 - Math.exp(-dt / tau));
-    if (vTarget === 0 && Math.abs(this.v) < 0.5) this.v = 0;
+    const advancing = this.isAdvancing();
+    this.ramp(advancing ? autoVelocity(this.model, this.config, this.maxPx()) : 0, dt);
 
     const prev = this.px;
     let natural = true;
@@ -374,19 +594,13 @@ export class ScrollEngine {
     if (this.play === 'playing' && this.holdUntil === null && this.loopAt === null && this.px >= max - 0.5) {
       this.reachEnd(now);
     }
-
-    this.render();
-    if (this.statusDirty || now - this.lastEmit >= STATUS_INTERVAL_MS) this.emit(now);
-
-    if (this.needsFrame()) {
-      this.schedule();
-    } else {
-      this.lastFrame = null;
-      this.emit(now);
-    }
-  };
+  }
 
   private needsFrame(): boolean {
+    if (this.mode === 'follow') {
+      const f = this.follower;
+      return f !== null && (f.snap.moving || this.v !== 0 || !f.settled);
+    }
     return (
       this.play === 'playing' ||
       this.play === 'countdown' ||
@@ -418,9 +632,7 @@ export class ScrollEngine {
     for (const listener of this.listeners) listener();
   }
 
-  private snapshot(now: number): EngineStatus {
-    const max = this.maxPx();
-    const velocity = autoVelocity(this.model, this.config, max);
+  private remainingMs(now: number, velocity: number, max: number): number {
     let remainingMs = velocity > 0 ? (Math.max(0, max - this.px) / velocity) * 1000 : 0;
     if (this.config.autoPauseOnCues) {
       this.model.cueP.forEach((p, i) => {
@@ -429,15 +641,39 @@ export class ScrollEngine {
       });
     }
     if (this.holdUntil !== null) remainingMs += Math.max(0, this.holdUntil - now);
+    return remainingMs;
+  }
+
+  private snapshot(now: number): EngineStatus {
+    const max = this.maxPx();
+    const pos = pxToPos(this.model, this.px);
+    const progress = max > 0 ? Math.min(1, this.px / max) : 0;
+    const marker = lastIndexAtOrBelow(this.model.markerP, this.px + this.model.lineHeightPx / 2);
+    if (this.mode === 'follow' && this.follower) {
+      const leader = this.extrapolate(this.follower, now);
+      return {
+        play: leader.play,
+        holding: leader.holding,
+        pos,
+        progress,
+        wpm: leader.wpm,
+        elapsedMs: leader.elapsedMs,
+        remainingMs: leader.remainingMs,
+        marker,
+        countdown: leader.countdownMs !== null ? Math.max(1, Math.ceil(leader.countdownMs / 1000)) : null,
+        t: now,
+      };
+    }
+    const velocity = autoVelocity(this.model, this.config, max);
     return {
       play: this.play,
       holding: this.holdUntil !== null,
-      pos: pxToPos(this.model, this.px),
-      progress: max > 0 ? Math.min(1, this.px / max) : 0,
+      pos,
+      progress,
       wpm: Math.round(effectiveWpm(velocity, this.model, this.config)),
       elapsedMs: this.elapsedMs,
-      remainingMs,
-      marker: lastIndexAtOrBelow(this.model.markerP, this.px + this.model.lineHeightPx / 2),
+      remainingMs: this.remainingMs(now, velocity, max),
+      marker,
       countdown: this.countdownEnd !== null ? Math.max(1, Math.ceil((this.countdownEnd - now) / 1000)) : null,
       t: now,
     };

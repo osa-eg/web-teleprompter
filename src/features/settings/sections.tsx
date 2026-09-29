@@ -333,12 +333,12 @@ export function PlaybackSection() {
   );
 }
 
-export function MirrorSection({ target = 'view' }: { target?: 'view' | 'display' }) {
+export function MirrorSection({ target = 'view', title }: { target?: 'view' | 'display'; title?: string }) {
   const t = useT();
   const mirror = useSettings((s) => s.settings[target]);
   const patch = useSettings((s) => s.patch);
   return (
-    <Section title={t('qs.mirror')}>
+    <Section title={title ?? t('qs.mirror')}>
       <Switch
         label={t('prompter.mirrorH')}
         checked={mirror.mirrorH}

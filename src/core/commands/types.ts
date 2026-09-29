@@ -11,6 +11,8 @@ export type EngineCommand =
   | { type: 'nudgeWpm'; steps: number }
   | { type: 'nudgeLines'; lines: number }
   | { type: 'nudgePages'; pages: number }
+  /** Wheel-like scrolling by a number of lines (used by windows that mirror another one). */
+  | { type: 'scrollBy'; lines: number }
   | { type: 'jumpBlock'; delta: -1 | 1 }
   | { type: 'jumpMarker'; delta: -1 | 1 }
   | { type: 'gotoMarker'; index: number }
@@ -43,6 +45,7 @@ const ENGINE_TYPES = new Set<string>([
   'nudgeWpm',
   'nudgeLines',
   'nudgePages',
+  'scrollBy',
   'jumpBlock',
   'jumpMarker',
   'gotoMarker',

@@ -68,6 +68,30 @@ export interface EngineStatus {
   t: number;
 }
 
+/**
+ * Layout-independent playback state, used to mirror another window (follow mode) and to hand
+ * playback over to it. Positions are token positions, so windows of different sizes stay in step.
+ */
+export interface EngineSnapshot {
+  play: PlayState;
+  holding: boolean;
+  /** The automatic scroll is advancing (playing and not holding, looping or dragged). */
+  moving: boolean;
+  pos: number;
+  /** Where an animated jump in flight is heading (token position), or null. */
+  seekPos: number | null;
+  /** Effective words per minute. */
+  wpm: number;
+  elapsedMs: number;
+  remainingMs: number;
+  /** Milliseconds left in the countdown, or null. */
+  countdownMs: number | null;
+  /** Milliseconds left in a timed cue, or null. */
+  holdMs: number | null;
+}
+
+export type EngineMode = 'lead' | 'follow';
+
 export interface EngineHost {
   now(): number;
   raf(callback: (time: number) => void): number;

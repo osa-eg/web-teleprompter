@@ -106,3 +106,19 @@
     justify-content: center;
   }
 }
+
+/* A connected display window or phone. */
+.linked {
+  position: relative;
+}
+
+.linked::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 6px;
+  inset-inline-end: 6px;
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  background: var(--success);
+}

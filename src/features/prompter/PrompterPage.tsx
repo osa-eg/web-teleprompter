@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { LoadingScreen } from '@/app/LoadingScreen';
 import { isEngineCommand, type Command } from '@/core/commands/types';
+import type { SyncRole } from '@/core/sync/protocol';
 import { fingerprint, resolveResumePos } from '@/core/engine/resume';
 import { clampWpm } from '@/core/engine/speed';
 import type { EngineConfig } from '@/core/engine/types';
@@ -10,8 +11,14 @@ import { actionCommand } from '@/core/keymap/actions';
 import { resolveKeymap } from '@/core/keymap/presets';
 import { spokenWords } from '@/core/script/ast';
 import { parseScript } from '@/core/script/parse';
+import { DisplayOverlay } from '@/features/display/DisplayOverlay';
+import { DisplayPanel } from '@/features/display/DisplayPanel';
+import { getTabSessionId } from '@/features/display/displayWindow';
 import { effectiveLineHeight, fontStackFor } from '@/features/fonts/fontSettings';
 import { useScriptFonts } from '@/features/fonts/useScriptFonts';
+import { useRemoteHostInfo } from '@/features/remote/hostService';
+import { RemotePanel } from '@/features/remote/RemotePanel';
+import { useRemoteController } from '@/features/remote/useRemoteController';
 import { useFormat, useT } from '@/i18n';
 import type { Script } from '@/storage/types';
 import { useLibrary } from '@/stores/library';
@@ -19,21 +26,33 @@ import { useSettings } from '@/stores/settings';
 import { ButtonLink } from '@/ui/Button';
 import { HelpDialog } from './HelpDialog';
 import { useFullscreen, useIdle, useKeymap, usePointerScroll, useWakeLock } from './hooks';
-import { OperatorBar } from './OperatorBar';
+import { useMediaKeys } from './useMediaKeys';
+import { OperatorBar, type Panel } from './OperatorBar';
 import { QuickSettings } from './QuickSettings';
 import type { RenderOptions } from './ScriptView';
 import { Stage } from './Stage';
 import { TalentHud } from './TalentHud';
 import { usePrompterEngine } from './usePrompterEngine';
+import { useSync } from './useSync';
 import styles from './PrompterPage.module.css';
 
+function useScript(id: string) {
+  const status = useLibrary((s) => s.status);
+  const script = useLibrary((s) => s.scripts.find((x) => x.id === id));
+  useEffect(() => {
+    void useLibrary.getState().init();
+  }, []);
+  return { ready: status === 'ready', script };
+}
+
+/** The operator's prompter (`#/s/:id/prompt`). */
 export function PrompterPage() {
   const t = useT();
   const { id = '' } = useParams();
-  const status = useLibrary((s) => s.status);
-  const script = useLibrary((s) => s.scripts.find((x) => x.id === id));
+  const { ready, script } = useScript(id);
+  const [sid] = useState(getTabSessionId);
 
-  if (status !== 'ready') return <LoadingScreen label={t('prompter.loading')} />;
+  if (!ready) return <LoadingScreen label={t('prompter.loading')} />;
   if (!script) {
     return (
       <div className={styles.missing}>
@@ -42,17 +61,49 @@ export function PrompterPage() {
       </div>
     );
   }
-  return <Prompter key={script.id} script={script} />;
+  return <Prompter key={script.id} script={script} role="operator" sid={sid} />;
 }
 
-function Prompter({ script }: { script: Script }) {
+/** A display window opened by an operator tab (`#/s/:id/display/:sid`), e.g. for the glass. */
+export function DisplayPage() {
+  const t = useT();
+  const { id = '', sid = '' } = useParams();
+  const { ready, script } = useScript(id);
+
+  if (!ready) return <LoadingScreen label={t('prompter.loading')} />;
+  if (!script) {
+    return (
+      <div className={styles.missing}>
+        <p>{t('editor.notFound')}</p>
+      </div>
+    );
+  }
+  return (
+    <Prompter
+      key={script.id}
+      script={script}
+      role="display"
+      sid={/^[0-9a-z]{8,32}$/.test(sid) ? sid : null}
+    />
+  );
+}
+
+interface PrompterProps {
+  script: Script;
+  role: SyncRole;
+  sid: string | null;
+}
+
+function Prompter({ script, role, sid }: PrompterProps) {
   const t = useT();
   const fmt = useFormat();
   const navigate = useNavigate();
   const settings = useSettings((s) => s.settings);
   const patch = useSettings((s) => s.patch);
   const updateScript = useLibrary((s) => s.update);
-  const { appearance, behavior, view } = settings;
+  const { appearance, behavior } = settings;
+  const isDisplay = role === 'display';
+  const view = isDisplay ? settings.display : settings.view;
 
   const doc = useMemo(
     () =>
@@ -110,12 +161,15 @@ function Prompter({ script }: { script: Script }) {
     layoutKey,
   });
 
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [panel, setPanel] = useState<Panel | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [overlayDismissed, setOverlayDismissed] = useState(false);
   const lastGuideStyle = useRef(appearance.guide.style === 'none' ? 'band+arrows' : appearance.guide.style);
   const fullscreen = useFullscreen();
   const playing = status.play === 'playing' || status.play === 'countdown';
-  const idle = useIdle(2500, playing && !settingsOpen);
+  // The display window's welcome card goes away for good once the show starts.
+  if (isDisplay && playing && !overlayDismissed) setOverlayDismissed(true);
+  const idle = useIdle(2500, (playing || isDisplay) && panel === null);
   const keymap = useMemo(
     () => resolveKeymap(settings.keymap.preset, settings.keymap.overrides),
     [settings.keymap],
@@ -129,8 +183,10 @@ function Prompter({ script }: { script: Script }) {
     if (behavior.resumeLastPosition && script.last) engine.jumpToPos(resolveResumePos(doc, script.last));
   }, [engine, behavior.resumeLastPosition, script.last, doc]);
 
-  // Remember the position whenever playback stops, and when leaving the prompter.
+  // Remember the position whenever playback stops, and when leaving the prompter (the window that
+  // runs playback does it).
   const savePosition = useCallback(() => {
+    if (engine.getMode() !== 'lead') return;
     const current = engine.getStatus();
     if (current.play === 'ended' || current.pos <= 0) {
       if (script.last) updateScript(script.id, { last: undefined }, { touch: false });
@@ -148,6 +204,20 @@ function Prompter({ script }: { script: Script }) {
   }, [status.play]);
   useEffect(() => () => savePositionRef.current(), []);
 
+  const sync = useSync({
+    engine,
+    role,
+    sid,
+    scriptId: script.id,
+    onScriptChange: isDisplay
+      ? (next) => navigate(`/s/${encodeURIComponent(next)}/display/${sid}`, { replace: true })
+      : undefined,
+  });
+  const displayConnected = sync.peers.some((p) => p.role === 'display');
+  const operatorConnected = sync.peers.some((p) => p.role === 'operator');
+  // Mirror keys act on the window the talent reads: the display window when there is one.
+  const mirrorTarget = isDisplay || displayConnected ? 'display' : 'view';
+
   const run = useCallback(
     (command: Command) => {
       const current = useSettings.getState().settings;
@@ -159,11 +229,13 @@ function Prompter({ script }: { script: Script }) {
             wpm: clampWpm(current.behavior.wpm + command.steps * current.behavior.wpmStep),
             targetDurationSec: null,
           });
-        case 'toggleMirror':
+        case 'toggleMirror': {
+          const mirror = current[mirrorTarget];
           return patch(
-            'view',
-            command.axis === 'h' ? { mirrorH: !current.view.mirrorH } : { mirrorV: !current.view.mirrorV },
+            mirrorTarget,
+            command.axis === 'h' ? { mirrorH: !mirror.mirrorH } : { mirrorV: !mirror.mirrorV },
           );
+        }
         case 'nudgeFontSize':
           return patch('appearance', {
             size: Math.min(220, Math.max(20, current.appearance.size + command.steps * 4)),
@@ -184,6 +256,7 @@ function Prompter({ script }: { script: Script }) {
         case 'help':
           return setHelpOpen((open) => !open);
         case 'exit':
+          if (isDisplay) return;
           return navigate(`/s/${script.id}/edit`);
         case 'toggleVoice':
         case 'toggleCamera':
@@ -193,10 +266,22 @@ function Prompter({ script }: { script: Script }) {
           if (isEngineCommand(command)) engine.dispatch(command);
       }
     },
-    [engine, patch, fullscreen, navigate, script.id],
+    [engine, patch, fullscreen, navigate, script.id, mirrorTarget, isDisplay],
   );
 
   useKeymap(keymap, (action) => run(actionCommand(action)));
+  useRemoteController({
+    enabled: !isDisplay,
+    title: script.title,
+    doc,
+    status,
+    fontSize: appearance.size,
+    mirror: settings[mirrorTarget],
+    canChangeLook: settings.remote.allowSettingChanges,
+    onCommand: run,
+  });
+  const remoteInfo = useRemoteHostInfo();
+  useMediaKeys(!isDisplay && settings.remote.mediaKeys, script.title, playing, run);
   useWakeLock(behavior.keepAwake);
   usePointerScroll(stageEl, engine, {
     invert: view.mirrorV,
@@ -233,6 +318,8 @@ function Prompter({ script }: { script: Script }) {
       className={clsx(styles.page, 'theme-dark')}
       data-idle={idle || undefined}
       data-hide-cursor={(idle && behavior.hideCursor) || undefined}
+      data-role={role}
+      data-sync={sync.leader ? 'lead' : 'follow'}
       style={{ background: appearance.colors.bg }}
     >
       <div ref={setStageEl} className={styles.stageWrap}>
@@ -259,24 +346,45 @@ function Prompter({ script }: { script: Script }) {
         {!appearance.hud.mirrorWithStage && hud}
       </div>
 
-      <OperatorBar
-        status={status}
-        wpm={status.wpm}
-        markers={doc.markers}
-        mirror={view}
-        hidden={idle}
-        fullscreen={fullscreen}
-        editorHref={`/s/${script.id}/edit`}
-        settingsOpen={settingsOpen}
-        onCommand={run}
-        onToggleSettings={() => setSettingsOpen((open) => !open)}
-      />
+      {!isDisplay && (
+        <OperatorBar
+          status={status}
+          wpm={status.wpm}
+          markers={doc.markers}
+          mirror={settings[mirrorTarget]}
+          hidden={idle}
+          fullscreen={fullscreen}
+          editorHref={`/s/${script.id}/edit`}
+          panel={panel}
+          displayConnected={displayConnected}
+          remoteDevices={remoteInfo.devices.length}
+          onCommand={run}
+          onPanel={(next) => setPanel((open) => (open === next ? null : next))}
+        />
+      )}
 
-      {settingsOpen && (
+      {isDisplay && !overlayDismissed && !fullscreen.active && (
+        <DisplayOverlay
+          connected={operatorConnected}
+          fullscreen={fullscreen}
+          onDismiss={() => setOverlayDismissed(true)}
+        />
+      )}
+
+      {panel === 'settings' && (
         <QuickSettings
           script={script}
           rtlDominant={doc.dominantDir === 'rtl'}
-          onClose={() => setSettingsOpen(false)}
+          onClose={() => setPanel(null)}
+        />
+      )}
+      {panel === 'remote' && <RemotePanel onClose={() => setPanel(null)} />}
+      {panel === 'display' && sid && (
+        <DisplayPanel
+          scriptId={script.id}
+          sid={sid}
+          connected={displayConnected}
+          onClose={() => setPanel(null)}
         />
       )}
 

@@ -32,6 +32,13 @@ font uploads.
   الاتجاه الشاردة، دمج الأسطر المكسورة، إزالة التشكيل، وتحويل الأرقام.
 - **صفحة إعدادات كاملة**: محرر اختصارات لوحة المفاتيح بالتقاط المفتاح وحل التعارضات، قوالب جاهزة للـClicker
   والدواسة، مظاهر محفوظة، حالة التخزين، وتراخيص الخطوط.
+- **نافذة عرض ثانية**: افتح النص في نافذة منفصلة لشاشة الملقّن تتحرك متزامنةً مع نافذة التحكم، بإعداد مرآة مستقل،
+  وملء الشاشة الأخرى مباشرةً في Chrome/Edge، وتنتقل تلقائياً إلى النص الذي تفتحه في نافذة التحكم. النافذة التي يقرأ
+  منها المقدم هي التي تدير التمرير، فلا يتوقف النص إن أُخفيت نافذة التحكم.
+- **التحكم من الهاتف**: امسح رمز QR بكاميرا الهاتف دون تثبيت أي تطبيق: تشغيل/إيقاف، السرعة، الفقرات والأقسام، حجم
+  الخط والمرآة، مع الوقت والتقدم. الاتصال مباشر ومشفّر (WebRTC) ومحمي بمفتاح سري في الرابط، حتى 3 هواتف، مع إعادة
+  اتصال تلقائية وخيار خادم PeerJS وخوادم TURN خاصة.
+- **أزرار الوسائط**: خواتم Bluetooth والسماعات وأزرار الوسائط في لوحة المفاتيح تتحكم بالملقّن حتى والنافذة غير نشطة.
 - **تطبيق قابل للتثبيت يعمل دون إنترنت (PWA)**: الواجهة وخط Cairo مخزّنان مسبقاً، وكل خط يُستخدم مرة يبقى متاحاً،
   مع زر لإتاحة كل الخطوط دون إنترنت، وإشعار التحديث لا يظهر أثناء القراءة.
 
@@ -57,6 +64,15 @@ font uploads.
   as ﷺ), strip stray direction marks, join hand-wrapped lines, remove diacritics and convert digits.
 - **Full settings page**: a keyboard shortcut editor with key capture and conflict handling, clicker and
   pedal presets, saved looks, storage status and font licenses.
+- **Second display window**: open the text in a separate window for the teleprompter monitor. It scrolls in
+  step with the operator window, has its own mirroring, can go full screen on the other screen (Chrome/Edge)
+  and follows the operator to the next script. The window the talent reads from runs the scroll, so hiding the
+  operator window never stalls the text.
+- **Phone remote**: scan a QR code, no app needed — play/pause, speed, paragraphs and sections, text size and
+  mirroring, with time and progress. Direct, encrypted WebRTC connection protected by a secret key in the
+  link; up to 3 phones, automatic reconnection, optional private PeerJS server and TURN servers.
+- **Media buttons**: Bluetooth rings, headsets and keyboard media keys control the prompter, even while
+  another window is active.
 - **Installable offline app (PWA)**: the app shell and the Cairo font are precached, every font you use is
   cached for offline use, and update prompts never interrupt a live read.
 
@@ -69,6 +85,10 @@ npm install
 npm run dev          # http://localhost:5173/web-teleprompter/
 npm run verify       # lint + typecheck + unit tests + build + Playwright e2e
 ```
+
+The phone-remote end-to-end tests start a local PeerJS signaling server (`npx peerjs`) next to the preview
+server. To try the remote with a real phone during development, run `npm run dev -- --host` and set
+**Settings → Remote control → Address phones open** to the LAN address shown by Vite.
 
 | Script              | Purpose                                                      |
 | ------------------- | ------------------------------------------------------------ |

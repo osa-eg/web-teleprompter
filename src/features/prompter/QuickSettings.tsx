@@ -1,7 +1,5 @@
-import { X } from 'lucide-react';
 import { useT } from '@/i18n';
 import type { Script } from '@/storage/types';
-import { IconButton } from '@/ui/Button';
 import {
   ColorsSection,
   GuideSection,
@@ -9,7 +7,7 @@ import {
   PlaybackSection,
   TextSection,
 } from '@/features/settings/sections';
-import styles from './QuickSettings.module.css';
+import { Drawer } from './Drawer';
 
 interface QuickSettingsProps {
   script: Script;
@@ -21,20 +19,12 @@ interface QuickSettingsProps {
 export function QuickSettings({ script, rtlDominant, onClose }: QuickSettingsProps) {
   const t = useT();
   return (
-    <aside className={styles.drawer} aria-label={t('prompter.settings')} data-testid="quick-settings">
-      <header className={styles.header}>
-        <h2>{t('prompter.settings')}</h2>
-        <IconButton label={t('action.close')} onClick={onClose}>
-          <X size={20} aria-hidden />
-        </IconButton>
-      </header>
-      <div className={styles.body}>
-        <TextSection script={script} rtlDominant={rtlDominant} />
-        <GuideSection />
-        <ColorsSection />
-        <PlaybackSection />
-        <MirrorSection />
-      </div>
-    </aside>
+    <Drawer title={t('prompter.settings')} onClose={onClose} testId="quick-settings">
+      <TextSection script={script} rtlDominant={rtlDominant} />
+      <GuideSection />
+      <ColorsSection />
+      <PlaybackSection />
+      <MirrorSection />
+    </Drawer>
   );
 }
