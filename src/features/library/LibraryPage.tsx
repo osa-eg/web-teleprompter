@@ -1,13 +1,17 @@
-import { FilePlus2, Search } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { FilePlus2, Search, Upload } from 'lucide-react';
+import { useMemo, useRef, useState, type DragEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { LoadingScreen } from '@/app/LoadingScreen';
 import { normalizeArabic } from '@/core/script/arabic';
 import { useT } from '@/i18n';
 import type { Script } from '@/storage/types';
+import { restoreBackup } from '@/features/settings/backupActions';
+import { requestPersistence } from '@/storage/persistence';
 import { useLibrary } from '@/stores/library';
 import { Button } from '@/ui/Button';
 import { Select } from '@/ui/Field';
+import { toast } from '@/ui/toast';
+import { IMPORT_ACCEPT, readImportFile } from './importFiles';
 import { ScriptCard } from './ScriptCard';
 import styles from './LibraryPage.module.css';
 
@@ -31,6 +35,8 @@ export function LibraryPage() {
   const create = useLibrary((s) => s.create);
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<SortKey>('updated');
+  const [dragging, setDragging] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const visible = useMemo(() => {
     const needle = normalizeArabic(query.trim());
@@ -42,11 +48,56 @@ export function LibraryPage() {
 
   const onNew = async () => {
     const script = await create();
+    void requestPersistence();
     navigate(`/s/${script.id}/edit`);
   };
 
+  const importFiles = async (files: File[]) => {
+    let imported = 0;
+    for (const file of files) {
+      const result = await readImportFile(file);
+      if (result.kind === 'script') {
+        await create({ title: result.title, body: result.body });
+        imported++;
+        if (result.legacyEncoding) toast({ message: t('library.legacyEncoding', { file: file.name }) });
+      } else if (result.kind === 'backup') {
+        imported += await restoreBackup(result.backup, { settings: false });
+      } else {
+        toast({ message: t('library.importFailed', { file: file.name }), tone: 'error' });
+      }
+    }
+    if (imported) {
+      toast({ message: t('library.imported', { count: imported }), tone: 'success' });
+      void requestPersistence();
+    }
+  };
+
+  const hasFiles = (event: DragEvent) => event.dataTransfer.types.includes('Files');
+
   return (
-    <div className={styles.page}>
+    <div
+      className={styles.page}
+      onDragOver={(event) => {
+        if (!hasFiles(event)) return;
+        event.preventDefault();
+        setDragging(true);
+      }}
+      onDragLeave={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragging(false);
+      }}
+      onDrop={(event) => {
+        if (!hasFiles(event)) return;
+        event.preventDefault();
+        setDragging(false);
+        void importFiles([...event.dataTransfer.files]);
+      }}
+    >
+      {dragging && (
+        <div className={styles.dropOverlay} aria-hidden>
+          <Upload size={40} />
+          <span>{t('library.dropHere')}</span>
+        </div>
+      )}
       <div className={styles.toolbar}>
         <div className={styles.heading}>
           <h1>{t('library.title')}</h1>
@@ -75,6 +126,26 @@ export function LibraryPage() {
               { value: 'created', label: t('library.sort.created') },
               { value: 'title', label: t('library.sort.title') },
             ]}
+          />
+          <Button
+            icon={<Upload size={18} aria-hidden />}
+            title={t('library.importHint')}
+            onClick={() => fileRef.current?.click()}
+          >
+            {t('library.import')}
+          </Button>
+          <input
+            ref={fileRef}
+            type="file"
+            multiple
+            hidden
+            accept={IMPORT_ACCEPT}
+            data-testid="import-input"
+            onChange={(event) => {
+              const files = [...(event.currentTarget.files ?? [])];
+              event.currentTarget.value = '';
+              void importFiles(files);
+            }}
           />
           <Button variant="primary" icon={<FilePlus2 size={18} aria-hidden />} onClick={() => void onNew()}>
             {t('library.new')}

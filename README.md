@@ -24,6 +24,16 @@ font uploads.
   وتُحمّل عند الحاجة فقط، مع معاينة حية وبحث وتصنيف، وارتفاع سطر مناسب لكل خط، وخط لاتيني منفصل اختياري للنصوص
   المختلطة، ورفع خطوطك الخاصة (TTF/OTF/WOFF/WOFF2)، واستخدام خطوط الجهاز.
 - محرر بصيغة بسيطة (`**عريض**` `==تظليل==` `[[ملاحظة]]` `# قسم`) مع معاينة حية وإحصاءات.
+- **الاستيراد والتصدير**: ملفات `.txt` و`.md` و`.docx` (Word) بالسحب والإفلات، مع كشف الترميز تلقائياً
+  (UTF-8/UTF-16 وملفات Windows العربية القديمة windows-1256)، ولصق ذكي من صفحات الويب وWord يحافظ على العناوين
+  والتنسيق (Ctrl+Shift+V للنص الخام)، وتصدير النص `.txt`/`.md`، ونسخة احتياطية كاملة `.json` تشمل الإعدادات
+  والخطوط المخصصة.
+- **أدوات تنظيف العربية**: إصلاح الحروف المنسوخة من PDF (أشكال العرض ﻣﺮﺣﺒﺎ ← مرحبا مع إبقاء ﷺ)، إزالة علامات
+  الاتجاه الشاردة، دمج الأسطر المكسورة، إزالة التشكيل، وتحويل الأرقام.
+- **صفحة إعدادات كاملة**: محرر اختصارات لوحة المفاتيح بالتقاط المفتاح وحل التعارضات، قوالب جاهزة للـClicker
+  والدواسة، مظاهر محفوظة، حالة التخزين، وتراخيص الخطوط.
+- **تطبيق قابل للتثبيت يعمل دون إنترنت (PWA)**: الواجهة وخط Cairo مخزّنان مسبقاً، وكل خط يُستخدم مرة يبقى متاحاً،
+  مع زر لإتاحة كل الخطوط دون إنترنت، وإشعار التحديث لا يظهر أثناء القراءة.
 
 ---
 
@@ -39,6 +49,16 @@ font uploads.
   fonts, self-hosted and lazy-loaded, with live previews, search, per-font line heights, an optional
   separate Latin font for mixed scripts, custom font uploads and fonts installed on the device.
 - Lightweight markup editor with live preview and statistics.
+- **Import and export**: `.txt`, `.md` and Word `.docx` files (drag and drop), automatic encoding
+  detection (UTF-8/UTF-16 and legacy Windows-1256 Arabic files), smart paste that keeps headings and
+  emphasis (Ctrl+Shift+V pastes plain text), `.txt`/`.md` export and full `.json` backups including
+  settings and custom fonts.
+- **Arabic clean-up tools**: fix text copied from PDFs (presentation forms, keeping word ligatures such
+  as ﷺ), strip stray direction marks, join hand-wrapped lines, remove diacritics and convert digits.
+- **Full settings page**: a keyboard shortcut editor with key capture and conflict handling, clicker and
+  pedal presets, saved looks, storage status and font licenses.
+- **Installable offline app (PWA)**: the app shell and the Cairo font are precached, every font you use is
+  cached for offline use, and update prompts never interrupt a live read.
 
 ## التطوير · Development
 

@@ -4,12 +4,14 @@ import { RouterProvider } from 'react-router/dom';
 import '@fontsource-variable/cairo/wght.css';
 import './styles/tokens.css';
 import './styles/base.css';
+import { initPwa } from './app/pwa';
 import { router } from './router';
 import { useLibrary } from './stores/library';
 import { initSettingsSync } from './stores/settings';
 
 initSettingsSync();
 void useLibrary.getState().init();
+void initPwa();
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Missing #root element');

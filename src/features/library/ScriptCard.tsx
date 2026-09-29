@@ -1,10 +1,11 @@
-import { Copy, Pencil, Play, Trash2 } from 'lucide-react';
+import { Copy, Download, Pencil, Play, Trash2 } from 'lucide-react';
 import { memo, useMemo } from 'react';
 import { Link } from 'react-router';
 import { countWords, estimateDurationMs } from '@/core/script/stats';
 import { useFormat, useT } from '@/i18n';
 import type { Script } from '@/storage/types';
 import { useLibrary } from '@/stores/library';
+import { downloadText, safeFileName } from '@/lib/download';
 import { useSettings } from '@/stores/settings';
 import { ButtonLink, IconButton } from '@/ui/Button';
 import { toast } from '@/ui/toast';
@@ -87,6 +88,13 @@ export const ScriptCard = memo(function ScriptCard({ script }: { script: Script 
         >
           {t('action.edit')}
         </ButtonLink>
+        <IconButton
+          label={t('action.export')}
+          size="sm"
+          onClick={() => downloadText(`${safeFileName(title)}.txt`, script.body)}
+        >
+          <Download size={16} aria-hidden />
+        </IconButton>
         <IconButton label={t('action.duplicate')} size="sm" onClick={() => void onDuplicate()}>
           <Copy size={16} aria-hidden />
         </IconButton>

@@ -5,6 +5,7 @@ import { useT } from '@/i18n';
 import { useLibrary } from '@/stores/library';
 import { useSettings, type UiSettings } from '@/stores/settings';
 import { IconButton } from '@/ui/Button';
+import { UpdateToast } from './UpdateToast';
 import styles from './Shell.module.css';
 
 const THEME_ORDER: UiSettings['theme'][] = ['system', 'dark', 'light'];
@@ -72,6 +73,7 @@ export function Shell() {
       <main className={styles.main}>
         <Outlet />
       </main>
+      <UpdateToast />
     </div>
   );
 }

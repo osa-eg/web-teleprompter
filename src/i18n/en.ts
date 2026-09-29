@@ -48,6 +48,83 @@ export const en = {
   'library.memoryOnly':
     'Your browser is blocking local storage, so scripts will be lost when this tab closes. Export them to keep a copy.',
 
+  'library.import': 'Import',
+  'library.importHint': 'Import .txt, .md, .docx or .html files, or a backup (.json)',
+  'library.imported': { one: 'Imported 1 script', other: 'Imported {count} scripts' },
+  'library.importFailed': 'Could not import “{file}”.',
+  'library.legacyEncoding': '“{file}” was read as Windows-1256 (legacy Arabic encoding).',
+  'library.dropHere': 'Drop files to import them',
+
+  'action.export': 'Export',
+  'export.txt': 'Script with markup (.txt)',
+  'export.md': 'Markdown (.md)',
+  'export.plain': 'Plain text without markup (.txt)',
+
+  'editor.tools': 'Text tools',
+  'tools.presentationForms': 'Fix Arabic letters copied from PDF',
+  'tools.joinLines': 'Join lines broken in the middle of sentences',
+  'tools.directionMarks': 'Remove hidden direction marks',
+  'tools.tashkeel': 'Remove diacritics (tashkeel)',
+  'tools.spaces': 'Clean up spaces and blank lines',
+  'tools.applied': 'Done. Press Ctrl+Z to undo.',
+  'tools.noChange': 'Nothing needed changing.',
+
+  'settings.nav': 'Settings sections',
+  'settings.display': 'Display',
+  'settings.keyboard': 'Keyboard & remotes',
+  'settings.presets': 'Saved looks',
+  'settings.storage': 'Storage & backup',
+  'settings.about': 'About',
+  'settings.resetAll': 'Reset all settings',
+  'settings.resetDone': 'Settings were reset.',
+
+  'keymap.preset': 'Control preset',
+  'keymap.preset.keyboard': 'Keyboard',
+  'keymap.preset.clicker': 'Presentation clicker (step through)',
+  'keymap.preset.clickerSpeed': 'Presentation clicker (speed)',
+  'keymap.preset.pedal': 'Foot pedal',
+  'keymap.add': 'Add key',
+  'keymap.press': 'Press a key…',
+  'keymap.remove': 'Remove {key}',
+  'keymap.reset': 'Reset to preset',
+  'keymap.conflict': '{key} was assigned to “{action}”; it now triggers this action.',
+  'keymap.hint':
+    'Most presentation clickers send Page Up/Page Down, the arrow keys, F5 or B/. — press the button on your device to assign it.',
+
+  'presets.save': 'Save current look',
+  'presets.name': 'Name for this look',
+  'presets.apply': 'Apply',
+  'presets.empty': 'No saved looks yet. Save the current font, colors and guide to switch back quickly.',
+  'presets.applied': 'Applied “{name}”',
+
+  'storage.persisted': 'Your data is protected from automatic cleanup.',
+  'storage.notPersisted': 'The browser may clear this data when storage runs low.',
+  'storage.persist': 'Protect my data',
+  'storage.usage': 'Using {used} of {quota}',
+  'storage.safariHint':
+    'Safari may delete data of sites you have not used for 7 days unless the app is installed. Keep a backup.',
+  'backup.export': 'Download backup',
+  'backup.includeFonts': 'Include my uploaded fonts',
+  'backup.restore': 'Restore from backup…',
+  'backup.restoreSettings': 'Also restore settings',
+  'backup.restored': { one: 'Restored 1 script', other: 'Restored {count} scripts' },
+  'backup.invalid': 'This file is not a teleprompter backup.',
+  'offline.title': 'Offline use',
+  'offline.hint': 'The app works offline once it has been opened; fonts you use are saved automatically.',
+  'offline.fonts': 'Make all fonts available offline',
+  'offline.progress': 'Downloading fonts… {done}/{total}',
+  'offline.done': 'All fonts are available offline.',
+
+  'pwa.update': 'A new version is available.',
+  'pwa.reload': 'Update',
+  'pwa.offlineReady': 'The app is ready to work offline.',
+
+  'about.description':
+    'A web teleprompter with first-class Arabic support: per-line text direction, 56 bundled fonts, custom fonts, mirroring and remote control.',
+  'about.version': 'Version {version}',
+  'about.licenses': 'Font licenses',
+  'about.licensesHint': 'The bundled fonts are licensed under the SIL Open Font License 1.1.',
+
   'script.untitled': 'Untitled script',
   'script.copyTitle': '{title} (copy)',
 

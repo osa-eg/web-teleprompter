@@ -1,0 +1,89 @@
+.table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th {
+  inline-size: 38%;
+  padding-block: var(--space-2);
+  padding-inline-end: var(--space-3);
+  font-weight: 600;
+  text-align: start;
+  vertical-align: middle;
+}
+
+.table td {
+  padding-block: var(--space-2);
+}
+
+.table tr + tr {
+  border-block-start: 1px solid var(--border);
+}
+
+.keys {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.key {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  border-block-end-width: 2px;
+  background: var(--surface-2);
+}
+
+.key kbd {
+  padding-inline: 8px 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.key button {
+  display: grid;
+  place-items: center;
+  inline-size: 22px;
+  block-size: 22px;
+  border: 0;
+  background: none;
+  color: var(--text-faint);
+}
+
+.key button:hover {
+  color: var(--danger);
+}
+
+.add {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-block-size: 26px;
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border-strong);
+  background: none;
+  color: var(--text-muted);
+  font-size: 12.5px;
+}
+
+.add:hover {
+  color: var(--text);
+  border-color: var(--text-muted);
+}
+
+.add[aria-pressed='true'] {
+  border-style: solid;
+  border-color: var(--accent);
+  color: var(--accent-text);
+  animation: blink 1s ease-in-out infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.55;
+  }
+}

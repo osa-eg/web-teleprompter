@@ -10,7 +10,7 @@ import {
   Italic,
   MessageSquareText,
 } from 'lucide-react';
-import { useState, type RefObject } from 'react';
+import { useState, type ReactNode } from 'react';
 import { toggleLineMark } from '@/core/script/direction';
 import { useT } from '@/i18n';
 import { IconButton } from '@/ui/Button';
@@ -18,9 +18,11 @@ import { cycleHeading, insertToken, toggleWrap, transformLine } from './textarea
 import styles from './MarkupToolbar.module.css';
 
 interface MarkupToolbarProps {
-  textareaRef: RefObject<HTMLTextAreaElement | null>;
+  textarea: HTMLTextAreaElement | null;
   previewOpen: boolean;
   onTogglePreview: () => void;
+  /** Extra controls (menus) shown before the preview toggle. */
+  extra?: ReactNode;
 }
 
 const SYNTAX: [string, Parameters<ReturnType<typeof useT>>[0]][] = [
@@ -36,13 +38,11 @@ const SYNTAX: [string, Parameters<ReturnType<typeof useT>>[0]][] = [
   ['\\* \\[', 'syntax.escape'],
 ];
 
-export function MarkupToolbar({ textareaRef, previewOpen, onTogglePreview }: MarkupToolbarProps) {
+export function MarkupToolbar({ textarea, previewOpen, onTogglePreview, extra }: MarkupToolbarProps) {
   const t = useT();
   const [helpOpen, setHelpOpen] = useState(false);
 
-  // Only ever called from event handlers, never during render.
-  const act = (fn: (textarea: HTMLTextAreaElement) => void) => {
-    const textarea = textareaRef.current;
+  const act = (fn: (element: HTMLTextAreaElement) => void) => {
     if (textarea) fn(textarea);
   };
 
@@ -109,6 +109,7 @@ export function MarkupToolbar({ textareaRef, previewOpen, onTogglePreview }: Mar
           <CircleHelp size={18} aria-hidden />
         </IconButton>
         <span className={styles.spacer} />
+        {extra}
         <IconButton
           size="sm"
           label={previewOpen ? t('editor.hidePreview') : t('editor.showPreview')}

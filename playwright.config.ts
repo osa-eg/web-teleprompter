@@ -3,6 +3,8 @@ import { defineConfig, devices } from '@playwright/test';
 const PORT = 4173;
 const BASE = '/web-teleprompter/';
 const CI = !!process.env.CI;
+// Chromium needs a UTF-8 locale to keep non-ASCII (Arabic) download file names.
+const env = { ...process.env, LANG: 'C.UTF-8', LC_ALL: 'C.UTF-8' } as Record<string, string>;
 
 export default defineConfig({
   testDir: './e2e',
@@ -21,6 +23,7 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         launchOptions: {
+          env,
           args: [
             '--use-fake-ui-for-media-stream',
             '--use-fake-device-for-media-stream',
@@ -34,6 +37,11 @@ export default defineConfig({
       name: 'mobile',
       use: { ...devices['Pixel 7'] },
       grep: /@mobile/,
+    },
+    {
+      name: 'pwa',
+      use: { ...devices['Desktop Chrome'], serviceWorkers: 'allow' },
+      testMatch: [/pwa\.spec\.ts/],
     },
   ],
   webServer: {

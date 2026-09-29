@@ -38,6 +38,8 @@ interface FontsState {
   remove(id: string): Promise<void>;
   /** Registers a stored font with the document so it can render. */
   ensureRegistered(id: string): Promise<boolean>;
+  /** Re-reads the stored fonts (after a restore). */
+  reload(): Promise<void>;
 }
 
 let repo: FontsRepo | null = null;
@@ -129,6 +131,12 @@ export const useFonts = create<FontsState>()((set, get) => ({
     unregisterCustomFont(id);
     await repo?.delete(id);
     set((state) => ({ custom: state.custom.filter((f) => f.id !== id) }));
+  },
+
+  async reload() {
+    await get().init();
+    const records = (await repo?.list()) ?? [];
+    set({ custom: records.map(toInfo) });
   },
 
   async ensureRegistered(id) {
