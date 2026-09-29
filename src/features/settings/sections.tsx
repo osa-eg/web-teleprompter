@@ -1,8 +1,17 @@
 import { Check } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { pickRecordingFormat } from '@/core/recording/format';
+import { listCameras } from '@/features/camera/useCameraStream';
 import { useT, useFormat } from '@/i18n';
 import type { Script, TextDirSetting } from '@/storage/types';
 import { useLibrary } from '@/stores/library';
-import { useSettings, type Appearance, type Behavior, type VoiceSettings } from '@/stores/settings';
+import {
+  useSettings,
+  type Appearance,
+  type Behavior,
+  type CameraSettings,
+  type VoiceSettings,
+} from '@/stores/settings';
 import { Choice, ColorField, Section, Slider, Switch } from '@/ui/controls';
 import { Field, Select } from '@/ui/Field';
 import { languageName, speechRecognitionAvailable, VOICE_LANGUAGES } from '@/features/voice/voiceLanguages';
@@ -419,6 +428,97 @@ export function VoiceSection() {
           />
         </>
       )}
+    </Section>
+  );
+}
+
+const QUALITIES = [2_500_000, 5_000_000, 8_000_000, 12_000_000];
+
+function recordingFormatLabel(preference: CameraSettings['format']): string | null {
+  if (typeof MediaRecorder === 'undefined') return null;
+  const format = pickRecordingFormat((type) => MediaRecorder.isTypeSupported(type), preference);
+  if (!format) return null;
+  return format.extension === 'mp4' ? 'MP4 (H.264)' : format.mimeType.includes('vp9') ? 'WebM (VP9)' : 'WebM';
+}
+
+export function CameraSection() {
+  const t = useT();
+  const camera = useSettings((s) => s.settings.camera);
+  const patch = useSettings((s) => s.patch);
+  const set = (value: Partial<CameraSettings>) => patch('camera', value);
+  const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    void listCameras().then((list) => !cancelled && setCameras(list));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  const format = recordingFormatLabel(camera.format);
+
+  return (
+    <Section title={t('camera.title')}>
+      <Choice<CameraSettings['layout']>
+        label={t('camera.layout')}
+        value={camera.layout}
+        onChange={(layout) => set({ layout })}
+        options={[
+          { value: 'pip', label: t('camera.layout.pip') },
+          { value: 'background', label: t('camera.layout.background') },
+        ]}
+      />
+      {cameras.length > 1 && (
+        <Field label={t('camera.device')}>
+          {(id) => (
+            <Select
+              id={id}
+              value={camera.deviceId ?? ''}
+              onChange={(deviceId) => set({ deviceId: deviceId || null })}
+              options={[
+                { value: '', label: t('camera.deviceDefault') },
+                ...cameras.map((device, i) => ({
+                  value: device.deviceId,
+                  label: device.label || `${t('camera.device')} ${i + 1}`,
+                })),
+              ]}
+            />
+          )}
+        </Field>
+      )}
+      <Switch
+        label={t('camera.mirror')}
+        hint={t('camera.mirrorHint')}
+        checked={camera.mirrorPreview}
+        onChange={(mirrorPreview) => set({ mirrorPreview })}
+      />
+      <Choice<CameraSettings['format']>
+        label={t('camera.format')}
+        value={camera.format}
+        onChange={(value) => set({ format: value })}
+        options={[
+          { value: 'auto', label: t('camera.format.auto') },
+          { value: 'mp4', label: 'MP4' },
+          { value: 'webm', label: 'WebM' },
+        ]}
+        hint={format ? t('camera.formatSupported', { format }) : t('camera.formatNone')}
+      />
+      <Choice<string>
+        label={t('camera.quality')}
+        value={String(camera.videoBitsPerSecond)}
+        onChange={(value) => set({ videoBitsPerSecond: Number(value) })}
+        options={[...new Set([...QUALITIES, camera.videoBitsPerSecond])]
+          .sort((a, b) => a - b)
+          .map((bits) => ({
+            value: String(bits),
+            label: t('camera.qualityValue', { mbps: bits / 1_000_000 }),
+          }))}
+      />
+      <Switch
+        label={t('camera.recordWithPlay')}
+        hint={t('camera.recordWithPlayHint')}
+        checked={camera.recordWithPlay}
+        onChange={(recordWithPlay) => set({ recordWithPlay })}
+      />
     </Section>
   );
 }

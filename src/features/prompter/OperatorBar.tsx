@@ -20,6 +20,8 @@ import {
   RotateCcw,
   SlidersHorizontal,
   Smartphone,
+  Video,
+  VideoOff,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
@@ -48,6 +50,9 @@ interface OperatorBarProps {
   voiceOn?: boolean;
   /** Voice status shown next to the microphone button. */
   voiceStatus?: ReactNode;
+  cameraOn?: boolean;
+  /** Record button and recording time. */
+  recordControl?: ReactNode;
   onCommand: (command: Command) => void;
   onPanel: (panel: Panel) => void;
 }
@@ -66,6 +71,8 @@ export function OperatorBar({
   remoteDevices = 0,
   voiceOn = false,
   voiceStatus,
+  cameraOn = false,
+  recordControl,
   onCommand,
   onPanel,
 }: OperatorBarProps) {
@@ -164,6 +171,15 @@ export function OperatorBar({
         </div>
 
         <div className={clsx(styles.group, styles.tools)}>
+          {recordControl}
+          <IconButton
+            label={t('camera.toggle')}
+            pressed={cameraOn}
+            data-testid="camera-button"
+            onClick={() => onCommand({ type: 'toggleCamera' })}
+          >
+            {cameraOn ? <Video size={20} aria-hidden /> : <VideoOff size={20} aria-hidden />}
+          </IconButton>
           {voiceStatus}
           <IconButton
             label={t('voice.title')}

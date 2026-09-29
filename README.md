@@ -7,8 +7,6 @@ A professional teleprompter that runs in the browser, with first-class Arabic su
 (right-to-left, left-to-right or automatic per line), a library of Arabic and Latin fonts, and custom
 font uploads.
 
-> 🚧 قيد التطوير على مراحل — Under active development in milestones (see the plan below).
-
 ## المزايا · Features
 
 - **اتجاه النص**: تلقائي لكل سطر حسب أغلبية الكلمات (فـ«iPhone 17 هو أحدث هاتف» يبقى من اليمين لليسار)، أو فرض
@@ -43,6 +41,9 @@ font uploads.
   تصمت، مع عتبة قابلة للضبط فوق ضوضاء المكان)، ووضع «متابعة كلماتي» يتعرّف على الكلمات المقروءة ويبقيها عند خط
   القراءة مع تمييز الكلمة المنطوقة، بمطابقة عربية مرنة (التشكيل والهمزات والتاء المربوطة وأدوات التعريف والعطف) وبدعم
   اللهجات العربية والإنجليزية.
+- **الكاميرا والتسجيل**: معاينة الكاميرا خلف النص (مع تعتيم وظل للنص) أو في نافذة صغيرة قابلة للسحب، معكوسة كالمرآة
+  بينما يُحفظ التسجيل بالاتجاه الصحيح؛ تسجيل MP4 أو WebM حسب دعم المتصفح (مع إصلاح مدة ملفات WebM)، يبدأ مع نهاية العد
+  التنازلي ويتوقف عند نهاية النص إن شئت، ويُحفظ باسم `teleprompter-YYYYMMDD-HHmm`.
 - **تطبيق قابل للتثبيت يعمل دون إنترنت (PWA)**: الواجهة وخط Cairo مخزّنان مسبقاً، وكل خط يُستخدم مرة يبقى متاحاً،
   مع زر لإتاحة كل الخطوط دون إنترنت، وإشعار التحديث لا يظهر أثناء القراءة.
 
@@ -82,6 +83,10 @@ font uploads.
   recognition to keep the words you read at the reading line and highlights the word just said, with
   forgiving Arabic matching (diacritics, hamza and teh-marbuta variants, clitics) and Arabic dialects or
   English.
+- **Camera and recording**: a camera preview behind the text (dimmed, with shadowed text) or in a small
+  draggable window, mirrored like a mirror while recordings keep the right orientation; MP4 or WebM recording
+  depending on the browser (WebM files get their duration fixed), optionally starting when the countdown ends
+  and stopping at the end of the script, saved as `teleprompter-YYYYMMDD-HHmm`.
 - **Installable offline app (PWA)**: the app shell and the Cairo font are precached, every font you use is
   cached for offline use, and update prompts never interrupt a live read.
 

@@ -10,6 +10,7 @@ import {
   Save,
   SlidersHorizontal,
   Smartphone,
+  Video,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { NavLink, useParams } from 'react-router';
@@ -21,6 +22,7 @@ import { KeymapEditor } from './KeymapEditor';
 import { PresetsPanel } from './PresetsPanel';
 import { RemoteSettings } from './RemoteSettings';
 import {
+  CameraSection,
   ColorsSection,
   GuideSection,
   MirrorSection,
@@ -114,6 +116,7 @@ const SECTIONS: SectionDef[] = [
     render: () => <PlaybackSection />,
   },
   { id: 'voice', label: 'voice.title', icon: <Mic size={18} />, render: () => <VoiceSection /> },
+  { id: 'camera', label: 'camera.title', icon: <Video size={18} />, render: () => <CameraSection /> },
   {
     id: 'mirror',
     label: 'qs.mirror',

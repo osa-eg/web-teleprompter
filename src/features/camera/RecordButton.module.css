@@ -1,0 +1,51 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-inline-size: 40px;
+  block-size: 40px;
+  padding-inline: var(--space-2);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--danger);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.button:hover:not(:disabled) {
+  background: var(--danger-soft);
+}
+
+.button[data-state='armed'] {
+  border-color: var(--danger);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.button[data-state='recording'] {
+  background: var(--danger);
+  color: #fff;
+}
+
+.time {
+  font-variant-numeric: tabular-nums;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@keyframes spin {
+  to {
+    rotate: 1turn;
+  }
+}

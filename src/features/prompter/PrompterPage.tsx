@@ -11,6 +11,10 @@ import { actionCommand } from '@/core/keymap/actions';
 import { resolveKeymap } from '@/core/keymap/presets';
 import { spokenWords } from '@/core/script/ast';
 import { parseScript } from '@/core/script/parse';
+import { CameraLayer } from '@/features/camera/CameraLayer';
+import { RecordButton } from '@/features/camera/RecordButton';
+import { useCameraStream } from '@/features/camera/useCameraStream';
+import { useRecording } from '@/features/camera/useRecording';
 import { DisplayOverlay } from '@/features/display/DisplayOverlay';
 import { DisplayPanel } from '@/features/display/DisplayPanel';
 import { getTabSessionId } from '@/features/display/displayWindow';
@@ -28,6 +32,7 @@ import type { Script } from '@/storage/types';
 import { useLibrary } from '@/stores/library';
 import { useSettings } from '@/stores/settings';
 import { ButtonLink } from '@/ui/Button';
+import { toast } from '@/ui/toast';
 import { HelpDialog } from './HelpDialog';
 import { useFullscreen, useIdle, useKeymap, usePointerScroll, useWakeLock } from './hooks';
 import { useMediaKeys } from './useMediaKeys';
@@ -169,6 +174,7 @@ function Prompter({ script, role, sid }: PrompterProps) {
   const [helpOpen, setHelpOpen] = useState(false);
   const [overlayDismissed, setOverlayDismissed] = useState(false);
   const [voiceOn, setVoiceOn] = useState(false);
+  const [cameraOn, setCameraOn] = useState(false);
   const [consentOpen, setConsentOpen] = useState(false);
   const lastGuideStyle = useRef(appearance.guide.style === 'none' ? 'band+arrows' : appearance.guide.style);
   const fullscreen = useFullscreen();
@@ -243,6 +249,37 @@ function Prompter({ script, role, sid }: PrompterProps) {
     setVoiceOn(true);
   }, [voiceOn]);
 
+  const camera = settings.camera;
+  const { stream, status: cameraStatus } = useCameraStream(cameraOn, camera.deviceId);
+  useEffect(() => {
+    if (cameraStatus === 'denied' || cameraStatus === 'unavailable' || cameraStatus === 'error') {
+      toast({ message: t(`camera.${cameraStatus}`), tone: 'error', duration: 8000 });
+    }
+  }, [cameraStatus, t]);
+  const recording = useRecording({
+    stream,
+    play: status.play,
+    camera,
+    onSaved: (name) => toast({ message: t('camera.saved', { name }), tone: 'success', duration: 6000 }),
+    onProblem: (problem) =>
+      toast({
+        message: t(
+          problem === 'long'
+            ? 'camera.long'
+            : problem === 'unsupported'
+              ? 'camera.unsupported'
+              : 'camera.recordFailed',
+        ),
+        tone: problem === 'long' ? 'info' : 'error',
+        duration: problem === 'long' ? 10_000 : 6000,
+      }),
+  });
+  const toggleRecording = useCallback(() => {
+    // Recording needs the camera: turn it on first (the take starts once it is ready).
+    if (recording.state === 'idle') setCameraOn(true);
+    recording.toggle();
+  }, [recording]);
+
   const run = useCallback(
     (command: Command) => {
       const current = useSettings.getState().settings;
@@ -286,13 +323,14 @@ function Prompter({ script, role, sid }: PrompterProps) {
         case 'toggleVoice':
           return toggleVoice();
         case 'toggleCamera':
+          return setCameraOn((on) => !on);
         case 'toggleRecording':
-          return;
+          return toggleRecording();
         default:
           if (isEngineCommand(command)) engine.dispatch(command);
       }
     },
-    [engine, patch, fullscreen, navigate, script.id, mirrorTarget, isDisplay, toggleVoice],
+    [engine, patch, fullscreen, navigate, script.id, mirrorTarget, isDisplay, toggleVoice, toggleRecording],
   );
 
   useKeymap(keymap, (action) => run(actionCommand(action)));
@@ -349,7 +387,16 @@ function Prompter({ script, role, sid }: PrompterProps) {
       style={{ background: appearance.colors.bg }}
     >
       <div ref={setStageEl} className={styles.stageWrap}>
+        {cameraOn && camera.layout === 'background' && (
+          <CameraLayer
+            stream={stream}
+            layout="background"
+            mirror={camera.mirrorPreview}
+            label={t('camera.toggle')}
+          />
+        )}
         <Stage
+          backdrop={cameraOn && camera.layout === 'background'}
           doc={doc}
           appearance={appearance}
           mirror={view}
@@ -385,6 +432,14 @@ function Prompter({ script, role, sid }: PrompterProps) {
           displayConnected={displayConnected}
           remoteDevices={remoteInfo.devices.length}
           voiceOn={voiceOn}
+          cameraOn={cameraOn}
+          recordControl={
+            <RecordButton
+              state={recording.state}
+              elapsedMs={recording.elapsedMs}
+              onToggle={toggleRecording}
+            />
+          }
           voiceStatus={
             <VoiceIndicator
               status={voice.status}
@@ -412,6 +467,10 @@ function Prompter({ script, role, sid }: PrompterProps) {
           onClose={() => setPanel(null)}
         />
       )}
+      {cameraOn && camera.layout === 'pip' && (
+        <CameraLayer stream={stream} layout="pip" mirror={camera.mirrorPreview} label={t('camera.toggle')} />
+      )}
+
       {isDisplay && voiceOn && (
         <div className={styles.displayVoice}>
           <VoiceIndicator

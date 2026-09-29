@@ -115,11 +115,13 @@ export const RemoteSchema = z.object({
 });
 
 export const CameraSchema = z.object({
-  layout: z.enum(['off', 'background', 'pip']),
+  /** How the preview is shown while the camera is on: behind the text, or a small movable window. */
+  layout: z.enum(['background', 'pip']),
   deviceId: z.string().max(500).nullable(),
   mirrorPreview: z.boolean(),
   format: z.enum(['auto', 'mp4', 'webm']),
   videoBitsPerSecond: z.number().int().min(250_000).max(50_000_000),
+  /** Record starts with playback (after the countdown) and stops at the end of the script. */
   recordWithPlay: z.boolean(),
 });
 
@@ -234,7 +236,7 @@ export function createDefaultSettings(lang: UiSettings['lang'] = detectDefaultLa
       mediaKeys: false,
     },
     camera: {
-      layout: 'off',
+      layout: 'pip',
       deviceId: null,
       mirrorPreview: true,
       format: 'auto',

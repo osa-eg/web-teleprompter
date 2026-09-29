@@ -49,6 +49,8 @@ interface StageProps {
   /** Small status line (e.g. a font still loading). */
   notice?: string | null;
   className?: string;
+  /** Camera preview behind the text: transparent stage, shadowed text. */
+  backdrop?: boolean;
 }
 
 /**
@@ -70,6 +72,7 @@ export function Stage({
   emptyMessage,
   notice,
   className,
+  backdrop = false,
 }: StageProps) {
   const spoken = status.voiceWord;
   // Voice following: mark the word just said (DOM class toggle, no re-render of the script).
@@ -91,6 +94,7 @@ export function Stage({
       data-pos={status.pos.toFixed(2)}
       data-mirror-h={mirror.mirrorH || undefined}
       data-mirror-v={mirror.mirrorV || undefined}
+      data-backdrop={backdrop || undefined}
     >
       <div ref={viewportRef} className={styles.viewport}>
         <div

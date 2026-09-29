@@ -1,13 +1,19 @@
 /** Saves text as a file through a temporary object URL. */
 export function downloadText(fileName: string, text: string, type = 'text/plain;charset=utf-8'): void {
-  const url = URL.createObjectURL(new Blob([text], { type }));
+  downloadBlob(fileName, new Blob([text], { type }));
+}
+
+/** Saves a blob as a file through a temporary object URL. */
+export function downloadBlob(fileName: string, blob: Blob): void {
+  const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
   link.download = fileName;
   document.body.append(link);
   link.click();
   link.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  // Large recordings need time to be handed over before the URL goes away.
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
 /** A file-name-safe version of a title (keeps Arabic letters). */

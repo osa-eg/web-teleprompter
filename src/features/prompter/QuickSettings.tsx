@@ -1,6 +1,7 @@
 import { useT } from '@/i18n';
 import type { Script } from '@/storage/types';
 import {
+  CameraSection,
   ColorsSection,
   GuideSection,
   MirrorSection,
@@ -26,6 +27,7 @@ export function QuickSettings({ script, rtlDominant, onClose }: QuickSettingsPro
       <ColorsSection />
       <PlaybackSection />
       <VoiceSection />
+      <CameraSection />
       <MirrorSection />
     </Drawer>
   );

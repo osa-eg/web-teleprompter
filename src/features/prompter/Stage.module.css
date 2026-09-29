@@ -191,3 +191,15 @@
   color: var(--tp-guide);
   transition: color 0.15s;
 }
+
+/* Camera preview behind the text. */
+.stage[data-backdrop],
+.stage[data-backdrop] .content {
+  background: transparent;
+}
+
+.stage[data-backdrop] .content {
+  text-shadow:
+    0 0 0.15em rgb(0 0 0 / 0.95),
+    0 0.03em 0.06em rgb(0 0 0 / 0.95);
+}
