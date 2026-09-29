@@ -1,0 +1,57 @@
+.hud {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 0;
+  z-index: 2;
+  pointer-events: none;
+  font-family: var(--font-ui);
+  font-size: clamp(12px, 1.35cqi, 28px);
+  font-weight: 600;
+  color: color-mix(in srgb, var(--tp-fg) 72%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+.progress {
+  block-size: max(3px, 0.25cqmin);
+  background: color-mix(in srgb, var(--tp-fg) 14%, transparent);
+}
+
+.fill {
+  block-size: 100%;
+  background: var(--tp-guide);
+  transition: inline-size 0.1s linear;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1em;
+  padding-block: 0.5em;
+  padding-inline: 1.2em;
+}
+
+.cell {
+  display: flex;
+  gap: 1.2em;
+}
+
+.cell:last-child {
+  justify-content: flex-end;
+}
+
+.center {
+  max-inline-size: 40cqi;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.state {
+  padding-block: 0.15em;
+  padding-inline: 0.8em;
+  border-radius: 1em;
+  background: color-mix(in srgb, var(--tp-guide) 20%, transparent);
+  color: var(--tp-guide);
+}

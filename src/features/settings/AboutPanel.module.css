@@ -1,0 +1,36 @@
+.about {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.name {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.muted {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.details summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.licenses {
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-2);
+  font-size: 13.5px;
+}
+
+.attribution {
+  color: var(--text-faint);
+  font-size: 12px;
+  text-align: start;
+  overflow-wrap: anywhere;
+}

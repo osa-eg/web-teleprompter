@@ -1,0 +1,421 @@
+{
+  "$comment": "Curated font list. Run `npm run fonts:gen` after editing. `variable` fonts come from @fontsource-variable, others from @fontsource. lineHeight is the recommended value (taller for scripts with diacritics).",
+  "fonts": [
+    {
+      "id": "cairo",
+      "variable": true,
+      "category": "sans",
+      "ar": "القاهرة",
+      "en": "Cairo",
+      "lineHeight": 1.6,
+      "recommended": true
+    },
+    {
+      "id": "tajawal",
+      "variable": false,
+      "category": "sans",
+      "ar": "تجوال",
+      "en": "Tajawal",
+      "lineHeight": 1.6,
+      "recommended": true
+    },
+    {
+      "id": "almarai",
+      "variable": false,
+      "category": "sans",
+      "ar": "المراعي",
+      "en": "Almarai",
+      "lineHeight": 1.6,
+      "recommended": true
+    },
+    {
+      "id": "ibm-plex-sans-arabic",
+      "variable": false,
+      "category": "sans",
+      "ar": "آي بي إم بلكس العربي",
+      "en": "IBM Plex Sans Arabic",
+      "lineHeight": 1.65,
+      "recommended": true
+    },
+    {
+      "id": "noto-sans-arabic",
+      "variable": true,
+      "category": "sans",
+      "ar": "نوتو سانس العربي",
+      "en": "Noto Sans Arabic",
+      "lineHeight": 1.7,
+      "recommended": true
+    },
+    {
+      "id": "readex-pro",
+      "variable": true,
+      "category": "sans",
+      "ar": "ريدكس برو",
+      "en": "Readex Pro",
+      "lineHeight": 1.65,
+      "recommended": true
+    },
+    {
+      "id": "vazirmatn",
+      "variable": true,
+      "category": "sans",
+      "ar": "وزيرمتن",
+      "en": "Vazirmatn",
+      "lineHeight": 1.7,
+      "recommended": true
+    },
+    {
+      "id": "alexandria",
+      "variable": true,
+      "category": "sans",
+      "ar": "الإسكندرية",
+      "en": "Alexandria",
+      "lineHeight": 1.6
+    },
+    { "id": "rubik", "variable": true, "category": "sans", "ar": "روبيك", "en": "Rubik", "lineHeight": 1.55 },
+    {
+      "id": "changa",
+      "variable": true,
+      "category": "sans",
+      "ar": "تشانغا",
+      "en": "Changa",
+      "lineHeight": 1.6
+    },
+    { "id": "mada", "variable": true, "category": "sans", "ar": "مدى", "en": "Mada", "lineHeight": 1.6 },
+    {
+      "id": "beiruti",
+      "variable": true,
+      "category": "sans",
+      "ar": "بيروتي",
+      "en": "Beiruti",
+      "lineHeight": 1.6
+    },
+    { "id": "zain", "variable": false, "category": "sans", "ar": "زين", "en": "Zain", "lineHeight": 1.6 },
+    {
+      "id": "el-messiri",
+      "variable": true,
+      "category": "sans",
+      "ar": "المسيري",
+      "en": "El Messiri",
+      "lineHeight": 1.7
+    },
+    {
+      "id": "cairo-play",
+      "variable": true,
+      "category": "sans",
+      "ar": "القاهرة بلاي",
+      "en": "Cairo Play",
+      "lineHeight": 1.6
+    },
+
+    {
+      "id": "noto-kufi-arabic",
+      "variable": true,
+      "category": "kufi",
+      "ar": "نوتو كوفي",
+      "en": "Noto Kufi Arabic",
+      "lineHeight": 1.7,
+      "recommended": true
+    },
+    {
+      "id": "reem-kufi",
+      "variable": true,
+      "category": "kufi",
+      "ar": "ريم كوفي",
+      "en": "Reem Kufi",
+      "lineHeight": 1.6
+    },
+    {
+      "id": "reem-kufi-fun",
+      "variable": true,
+      "category": "kufi",
+      "ar": "ريم كوفي فن",
+      "en": "Reem Kufi Fun",
+      "lineHeight": 1.6
+    },
+    {
+      "id": "reem-kufi-ink",
+      "variable": false,
+      "category": "kufi",
+      "ar": "ريم كوفي حبر",
+      "en": "Reem Kufi Ink",
+      "lineHeight": 1.6
+    },
+    { "id": "kufam", "variable": true, "category": "kufi", "ar": "كوفام", "en": "Kufam", "lineHeight": 1.6 },
+    {
+      "id": "qahiri",
+      "variable": false,
+      "category": "kufi",
+      "ar": "قاهري",
+      "en": "Qahiri",
+      "lineHeight": 1.6
+    },
+
+    {
+      "id": "noto-naskh-arabic",
+      "variable": true,
+      "category": "naskh",
+      "ar": "نوتو نسخ",
+      "en": "Noto Naskh Arabic",
+      "lineHeight": 1.8,
+      "recommended": true
+    },
+    {
+      "id": "amiri",
+      "variable": false,
+      "category": "naskh",
+      "ar": "الأميري",
+      "en": "Amiri",
+      "lineHeight": 2.0,
+      "recommended": true
+    },
+    {
+      "id": "amiri-quran",
+      "variable": false,
+      "category": "naskh",
+      "ar": "الأميري قرآن",
+      "en": "Amiri Quran",
+      "lineHeight": 2.2
+    },
+    {
+      "id": "scheherazade-new",
+      "variable": false,
+      "category": "naskh",
+      "ar": "شهرزاد",
+      "en": "Scheherazade New",
+      "lineHeight": 2.0
+    },
+    {
+      "id": "lateef",
+      "variable": false,
+      "category": "naskh",
+      "ar": "لطيف",
+      "en": "Lateef",
+      "lineHeight": 2.0
+    },
+    {
+      "id": "markazi-text",
+      "variable": true,
+      "category": "naskh",
+      "ar": "مركزي",
+      "en": "Markazi Text",
+      "lineHeight": 1.7
+    },
+    {
+      "id": "harmattan",
+      "variable": false,
+      "category": "naskh",
+      "ar": "هرمتان",
+      "en": "Harmattan",
+      "lineHeight": 1.9
+    },
+    {
+      "id": "mirza",
+      "variable": false,
+      "category": "naskh",
+      "ar": "ميرزا",
+      "en": "Mirza",
+      "lineHeight": 1.8
+    },
+    {
+      "id": "alkalami",
+      "variable": false,
+      "category": "naskh",
+      "ar": "القلمي",
+      "en": "Alkalami",
+      "lineHeight": 2.0
+    },
+    {
+      "id": "ruwudu",
+      "variable": false,
+      "category": "naskh",
+      "ar": "رودو",
+      "en": "Ruwudu",
+      "lineHeight": 2.0
+    },
+
+    {
+      "id": "aref-ruqaa",
+      "variable": false,
+      "category": "ruqaa",
+      "ar": "عارف رقعة",
+      "en": "Aref Ruqaa",
+      "lineHeight": 1.9
+    },
+    {
+      "id": "aref-ruqaa-ink",
+      "variable": false,
+      "category": "ruqaa",
+      "ar": "عارف رقعة حبر",
+      "en": "Aref Ruqaa Ink",
+      "lineHeight": 1.9
+    },
+
+    {
+      "id": "noto-nastaliq-urdu",
+      "variable": true,
+      "category": "nastaliq",
+      "ar": "نوتو نستعليق",
+      "en": "Noto Nastaliq Urdu",
+      "lineHeight": 2.5
+    },
+    {
+      "id": "gulzar",
+      "variable": false,
+      "category": "nastaliq",
+      "ar": "جلزار",
+      "en": "Gulzar",
+      "lineHeight": 2.4
+    },
+
+    {
+      "id": "lalezar",
+      "variable": false,
+      "category": "display",
+      "ar": "لالهزار",
+      "en": "Lalezar",
+      "lineHeight": 1.5
+    },
+    {
+      "id": "lemonada",
+      "variable": true,
+      "category": "display",
+      "ar": "ليمونادة",
+      "en": "Lemonada",
+      "lineHeight": 1.7
+    },
+    {
+      "id": "baloo-bhaijaan-2",
+      "variable": true,
+      "category": "display",
+      "ar": "بالو بهيجان",
+      "en": "Baloo Bhaijaan 2",
+      "lineHeight": 1.6
+    },
+    {
+      "id": "marhey",
+      "variable": true,
+      "category": "display",
+      "ar": "مرحي",
+      "en": "Marhey",
+      "lineHeight": 1.6
+    },
+    {
+      "id": "rakkas",
+      "variable": false,
+      "category": "display",
+      "ar": "رقاص",
+      "en": "Rakkas",
+      "lineHeight": 1.6
+    },
+    {
+      "id": "jomhuria",
+      "variable": false,
+      "category": "display",
+      "ar": "جمهورية",
+      "en": "Jomhuria",
+      "lineHeight": 1.3
+    },
+    {
+      "id": "katibeh",
+      "variable": false,
+      "category": "display",
+      "ar": "كاتبة",
+      "en": "Katibeh",
+      "lineHeight": 1.4
+    },
+    {
+      "id": "vibes",
+      "variable": false,
+      "category": "display",
+      "ar": "فايبز",
+      "en": "Vibes",
+      "lineHeight": 1.8
+    },
+    {
+      "id": "blaka",
+      "variable": false,
+      "category": "display",
+      "ar": "بلاكا",
+      "en": "Blaka",
+      "lineHeight": 1.6
+    },
+    {
+      "id": "badeen-display",
+      "variable": false,
+      "category": "display",
+      "ar": "بديع",
+      "en": "Badeen Display",
+      "lineHeight": 1.6
+    },
+
+    {
+      "id": "playpen-sans-arabic",
+      "variable": true,
+      "category": "handwriting",
+      "ar": "بلاي بن",
+      "en": "Playpen Sans Arabic",
+      "lineHeight": 1.7
+    },
+
+    { "id": "inter", "variable": true, "category": "sans", "ar": "إنتر", "en": "Inter", "lineHeight": 1.45 },
+    {
+      "id": "roboto",
+      "variable": true,
+      "category": "sans",
+      "ar": "روبوتو",
+      "en": "Roboto",
+      "lineHeight": 1.45
+    },
+    {
+      "id": "open-sans",
+      "variable": true,
+      "category": "sans",
+      "ar": "أوبن سانس",
+      "en": "Open Sans",
+      "lineHeight": 1.5
+    },
+    { "id": "lato", "variable": false, "category": "sans", "ar": "لاتو", "en": "Lato", "lineHeight": 1.45 },
+    {
+      "id": "atkinson-hyperlegible-next",
+      "variable": true,
+      "category": "sans",
+      "ar": "أتكينسون (سهل القراءة)",
+      "en": "Atkinson Hyperlegible Next",
+      "lineHeight": 1.5
+    },
+    {
+      "id": "lexend",
+      "variable": true,
+      "category": "sans",
+      "ar": "ليكسند",
+      "en": "Lexend",
+      "lineHeight": 1.5
+    },
+    { "id": "arimo", "variable": true, "category": "sans", "ar": "أريمو", "en": "Arimo", "lineHeight": 1.45 },
+    {
+      "id": "merriweather",
+      "variable": true,
+      "category": "serif",
+      "ar": "ميريويذر",
+      "en": "Merriweather",
+      "lineHeight": 1.55
+    },
+    {
+      "id": "source-serif-4",
+      "variable": true,
+      "category": "serif",
+      "ar": "سورس سيريف",
+      "en": "Source Serif 4",
+      "lineHeight": 1.5
+    },
+    {
+      "id": "roboto-mono",
+      "variable": true,
+      "category": "mono",
+      "ar": "روبوتو مونو",
+      "en": "Roboto Mono",
+      "lineHeight": 1.5
+    }
+  ]
+}

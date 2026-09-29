@@ -1,0 +1,56 @@
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: rgb(0 0 0 / 0.72);
+  backdrop-filter: blur(6px);
+  color: var(--text);
+  font-family: var(--font-ui);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-inline-size: 560px;
+  padding: var(--space-6);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.card h1 {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.status {
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.status[data-state='connected'] {
+  color: var(--success);
+}
+
+.hint {
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-block-start: var(--space-2);
+}
+
+.error {
+  color: var(--danger);
+}

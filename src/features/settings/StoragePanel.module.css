@@ -1,0 +1,35 @@
+.status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text-muted);
+}
+
+.status[data-persisted='true'] svg {
+  color: var(--success);
+}
+
+.status > div {
+  flex: 1;
+}
+
+.muted {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.row > div:first-child {
+  flex: 1;
+  min-inline-size: 220px;
+}

@@ -52,8 +52,56 @@
   animation: spin 1s linear infinite;
 }
 
-.body {
+.split {
   flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+  min-block-size: 60vh;
+}
+
+.split[data-preview] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 999px) {
+  .split[data-preview] {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(40vh, 1fr) minmax(30vh, auto);
+  }
+}
+
+.preview {
+  min-block-size: 0;
+  max-block-size: calc(100dvh - 240px);
+}
+
+.notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding-block: var(--space-2);
+  padding-inline: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  color: var(--text);
+  font-size: 13.5px;
+}
+
+.notice svg {
+  color: var(--accent-text);
+}
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  color: var(--text-faint);
+  font-size: 13px;
+}
+
+.body {
   min-block-size: 60vh;
   inline-size: 100%;
   resize: none;
@@ -63,9 +111,13 @@
   background: var(--surface);
   font-size: 18px;
   line-height: 1.9;
-  /* Every line resolves its own direction, so mixed Arabic/English scripts edit naturally. */
-  unicode-bidi: plaintext;
   text-align: start;
+}
+
+/* In automatic mode every line resolves its own direction, so mixed Arabic/English scripts edit
+   naturally; a forced direction applies to the whole text. */
+.body[data-dir-mode='auto'] {
+  unicode-bidi: plaintext;
 }
 
 .body:focus {

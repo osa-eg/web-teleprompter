@@ -1,4 +1,6 @@
-:root {
+/* Dark is the default; `.theme-dark` forces it for a subtree (the prompter controls). */
+:root,
+.theme-dark {
   color-scheme: dark;
 
   --font-ui: 'Cairo Variable', system-ui, 'Segoe UI', Tahoma, 'Geeza Pro', Arial, sans-serif;

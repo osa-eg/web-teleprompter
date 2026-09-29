@@ -1,0 +1,64 @@
+.indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-inline-size: 22em;
+  padding-block: 2px;
+  padding-inline: var(--space-2);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.indicator[data-problem] {
+  border-radius: var(--radius-sm);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.dot {
+  flex: none;
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  background: var(--text-faint);
+}
+
+.indicator[data-status='speaking'] .dot {
+  background: var(--success);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 30%, transparent);
+}
+
+.indicator[data-problem] .dot {
+  background: var(--danger);
+}
+
+.text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.indicator[data-problem] .text {
+  white-space: normal;
+}
+
+.meter {
+  flex: none;
+  inline-size: 48px;
+  block-size: 6px;
+  border-radius: 3px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+
+.meterFill {
+  display: block;
+  block-size: 100%;
+  background: var(--success);
+  transition: inline-size 60ms linear;
+}

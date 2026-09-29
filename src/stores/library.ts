@@ -7,6 +7,8 @@ import { useSettings } from './settings';
 
 const SAVE_DELAY_MS = 400;
 const CHANNEL_NAME = 'tp:db';
+/** Synchronous backup of unsaved edits, written when the page is hidden or unloaded. */
+const PENDING_KEY = 'tp:pending';
 
 type ScriptPatch = Partial<Omit<Script, 'id' | 'createdAt' | 'updatedAt'>>;
 type DbMessage = { type: 'put' | 'delete'; id: string };
@@ -27,6 +29,25 @@ export interface LibraryState {
   duplicate(id: string, title: string): Promise<Script | undefined>;
   /** Writes all pending edits now (e.g. before the page is hidden). */
   flush(): Promise<void>;
+}
+
+function readPendingJournal(): Script[] {
+  try {
+    const raw = localStorage.getItem(PENDING_KEY);
+    const parsed: unknown = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? (parsed as Script[]).filter((s) => typeof s?.id === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+function writePendingJournal(scripts: Script[]): void {
+  try {
+    if (scripts.length) localStorage.setItem(PENDING_KEY, JSON.stringify(scripts));
+    else localStorage.removeItem(PENDING_KEY);
+  } catch {
+    // Storage full or blocked: the asynchronous save is still attempted.
+  }
 }
 
 let repo: ScriptsRepo | null = null;
@@ -86,6 +107,12 @@ export const useLibrary = create<LibraryState>()((set, get) => {
       initPromise ??= (async () => {
         set({ status: 'loading' });
         repo = await openScriptsRepo();
+        // Apply edits that were journaled synchronously when a previous page closed mid-save.
+        for (const pending of readPendingJournal()) {
+          const stored = await repo.get(pending.id);
+          if (!stored || stored.updatedAt <= pending.updatedAt) await repo.put(pending);
+        }
+        writePendingJournal([]);
         let scripts = await repo.list();
         if (scripts.length === 0 && !(await repo.getMeta<boolean>('seeded'))) {
           const now = Date.now();
@@ -106,9 +133,20 @@ export const useLibrary = create<LibraryState>()((set, get) => {
           channel.onmessage = (event: MessageEvent<DbMessage>) => void onRemoteChange(event.data);
         }
         if (typeof window !== 'undefined') {
-          window.addEventListener('pagehide', () => void get().flush());
+          // `saving` covers both debounced edits and writes still in flight, so a second event
+          // (visibilitychange followed by pagehide) never drops the backup of an uncommitted edit.
+          const journalAndFlush = () => {
+            const unsaved = get().saving;
+            writePendingJournal(get().scripts.filter((s) => unsaved[s.id]));
+            void get()
+              .flush()
+              .then(() => {
+                if (Object.keys(get().saving).length === 0) writePendingJournal([]);
+              });
+          };
+          window.addEventListener('pagehide', journalAndFlush);
           document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') void get().flush();
+            if (document.visibilityState === 'hidden') journalAndFlush();
           });
         }
       })();

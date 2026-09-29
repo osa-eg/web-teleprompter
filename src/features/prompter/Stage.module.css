@@ -1,0 +1,205 @@
+.stage {
+  position: relative;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: hidden;
+  container-type: size;
+  background: var(--tp-bg);
+  color: var(--tp-fg);
+  transform: scale(var(--mx, 1), var(--my, 1));
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Shared text metrics so overlays can size themselves in `lh` of the script text. */
+.metrics {
+  font-family: var(--tp-font);
+  font-size: calc(var(--tp-size) * var(--tp-unit));
+  font-weight: var(--tp-weight);
+  line-height: var(--tp-lh);
+}
+
+.viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.content {
+  position: relative;
+  will-change: transform;
+  /* An opaque layer keeps subpixel antialiasing on the scrolling text. */
+  background: var(--tp-bg);
+  word-spacing: var(--tp-ws);
+  padding-inline: var(--tp-margin);
+  padding-block-start: max(0px, calc(var(--tp-reading) * 1cqb - 0.5lh));
+  padding-block-end: calc((100 - var(--tp-reading)) * 1cqb + 1lh);
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  overflow-wrap: break-word;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.dimTop,
+.dimBottom {
+  position: absolute;
+  inset-inline: 0;
+  background: color-mix(in srgb, var(--tp-bg) calc(var(--tp-dim) * 100%), transparent);
+}
+
+.dimTop {
+  inset-block-start: 0;
+  block-size: max(0px, calc(var(--tp-reading) * 1cqb - 0.5lh));
+}
+
+.dimBottom {
+  inset-block: calc(var(--tp-reading) * 1cqb + 0.5lh) 0;
+}
+
+.fadeTop,
+.fadeBottom {
+  position: absolute;
+  inset-inline: 0;
+  block-size: 12%;
+}
+
+.fadeTop {
+  inset-block-start: 0;
+  background: linear-gradient(to bottom, var(--tp-bg), transparent);
+}
+
+.fadeBottom {
+  inset-block-end: 0;
+  background: linear-gradient(to top, var(--tp-bg), transparent);
+}
+
+.band {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: calc(var(--tp-reading) * 1cqb - 0.5lh);
+  block-size: 1lh;
+  background: color-mix(in srgb, var(--tp-guide) 10%, transparent);
+  border-block: 2px solid color-mix(in srgb, var(--tp-guide) 45%, transparent);
+}
+
+.guideLine {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: calc(var(--tp-reading) * 1cqb - 1px);
+  block-size: 2px;
+  background: color-mix(in srgb, var(--tp-guide) 80%, transparent);
+}
+
+/* Arrows sit on the side where lines begin and point into the text. */
+.arrowStart,
+.arrowEnd {
+  position: absolute;
+  inset-block-start: calc(var(--tp-reading) * 1cqb - 0.3em);
+  inline-size: 0.42em;
+  block-size: 0.6em;
+  background: var(--tp-guide);
+}
+
+.arrowStart {
+  inset-inline-start: 0.12em;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+
+.arrowStart:dir(rtl),
+.arrowEnd {
+  clip-path: polygon(100% 0, 0 50%, 100% 100%);
+}
+
+.arrowEnd {
+  inset-inline-end: 0.12em;
+}
+
+.arrowEnd:dir(rtl) {
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+
+.empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 5%;
+  font-family: var(--font-ui);
+  font-size: clamp(16px, 2.4cqi, 40px);
+  text-align: center;
+  opacity: 0.7;
+}
+
+.notice {
+  position: absolute;
+  inset-block-end: 1.5cqb;
+  inset-inline: 0;
+  inline-size: fit-content;
+  margin-inline: auto;
+  z-index: 2;
+  padding-block: 0.3em;
+  padding-inline: 1em;
+  border-radius: 1em;
+  background: color-mix(in srgb, var(--tp-fg) 12%, transparent);
+  font-family: var(--font-ui);
+  font-size: clamp(12px, 1.1cqi, 20px);
+  animation: appear 0.3s 0.4s both;
+  pointer-events: none;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
+
+.countdown {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--tp-bg) 55%, transparent);
+  pointer-events: none;
+}
+
+.countdownNumber {
+  font-family: var(--font-ui);
+  font-size: 32cqmin;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--tp-guide);
+  animation: pulse 1s ease-out;
+}
+
+@keyframes pulse {
+  from {
+    transform: scale(1.35);
+    opacity: 0.3;
+  }
+}
+
+/* The word the talent just said (voice following). */
+.content :global(.is-spoken) {
+  color: var(--tp-guide);
+  transition: color 0.15s;
+}
+
+/* Camera preview behind the text. */
+.stage[data-backdrop],
+.stage[data-backdrop] .content {
+  background: transparent;
+}
+
+.stage[data-backdrop] .content {
+  text-shadow:
+    0 0 0.15em rgb(0 0 0 / 0.95),
+    0 0.03em 0.06em rgb(0 0 0 / 0.95);
+}

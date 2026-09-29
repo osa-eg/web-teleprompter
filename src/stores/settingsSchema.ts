@@ -89,7 +89,8 @@ export const KeymapSchema = z.object({
 });
 
 export const VoiceSchema = z.object({
-  mode: z.enum(['off', 'vad', 'follow']),
+  /** vad: scroll at the set speed while the talent speaks; follow: speech recognition tracks the words. */
+  mode: z.enum(['vad', 'follow']),
   lang: z.string().min(2).max(20),
   vadSensitivityDb: z.number().min(4).max(30),
   lookAheadLines: z.number().min(0).max(3),
@@ -114,11 +115,13 @@ export const RemoteSchema = z.object({
 });
 
 export const CameraSchema = z.object({
-  layout: z.enum(['off', 'background', 'pip']),
+  /** How the preview is shown while the camera is on: behind the text, or a small movable window. */
+  layout: z.enum(['background', 'pip']),
   deviceId: z.string().max(500).nullable(),
   mirrorPreview: z.boolean(),
   format: z.enum(['auto', 'mp4', 'webm']),
   videoBitsPerSecond: z.number().int().min(250_000).max(50_000_000),
+  /** Record starts with playback (after the countdown) and stops at the end of the script. */
   recordWithPlay: z.boolean(),
 });
 
@@ -221,7 +224,7 @@ export function createDefaultSettings(lang: UiSettings['lang'] = detectDefaultLa
       keepAwake: true,
     },
     keymap: { preset: 'keyboard', overrides: {} },
-    voice: { mode: 'off', lang: 'ar-SA', vadSensitivityDb: 12, lookAheadLines: 0.5 },
+    voice: { mode: 'vad', lang: 'ar-SA', vadSensitivityDb: 12, lookAheadLines: 0.5 },
     remote: {
       remoteBaseUrl: '',
       peerHost: '',
@@ -233,7 +236,7 @@ export function createDefaultSettings(lang: UiSettings['lang'] = detectDefaultLa
       mediaKeys: false,
     },
     camera: {
-      layout: 'off',
+      layout: 'pip',
       deviceId: null,
       mirrorPreview: true,
       format: 'auto',

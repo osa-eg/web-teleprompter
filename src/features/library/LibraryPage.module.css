@@ -55,6 +55,29 @@
   min-inline-size: 180px;
 }
 
+.page {
+  position: relative;
+  min-block-size: calc(100dvh - var(--header-h));
+}
+
+.dropOverlay {
+  position: fixed;
+  inset: var(--space-3);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  border: 3px dashed var(--accent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  color: var(--accent-text);
+  font-size: 20px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
 .grid {
   list-style: none;
   margin: 0;

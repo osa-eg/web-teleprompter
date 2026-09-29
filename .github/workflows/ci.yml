@@ -24,11 +24,13 @@ jobs:
           cache: npm
 
       - run: npm ci
+      - run: npm run fonts:check
       - run: npm run lint
       - run: npm run format:check
       - run: npm run typecheck
       - run: npm run test -- --coverage
       - run: npm run build
+      - run: npm run check:dist
 
       - name: Cache Playwright browsers
         uses: actions/cache@v4

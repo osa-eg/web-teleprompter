@@ -1,0 +1,34 @@
+.page {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.page[data-hide-cursor] {
+  cursor: none;
+}
+
+.stageWrap {
+  position: absolute;
+  inset: 0;
+}
+
+.missing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  min-block-size: 100dvh;
+  color: var(--text-muted);
+}
+
+/* Voice status in a display window (no operator bar there). */
+.displayVoice {
+  position: absolute;
+  inset-block-start: var(--space-3);
+  inset-inline-start: var(--space-3);
+  z-index: 25;
+  font-family: var(--font-ui);
+}
