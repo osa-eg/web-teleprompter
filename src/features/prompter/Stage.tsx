@@ -46,6 +46,8 @@ interface StageProps {
   /** Talent-facing info drawn inside the (mirrored) stage. */
   hud?: ReactNode;
   emptyMessage?: string;
+  /** Small status line (e.g. a font still loading). */
+  notice?: string | null;
   className?: string;
 }
 
@@ -66,6 +68,7 @@ export function Stage({
   contentRef,
   hud,
   emptyMessage,
+  notice,
   className,
 }: StageProps) {
   return (
@@ -99,6 +102,12 @@ export function Stage({
       {doc.blocks.length === 0 && emptyMessage && <p className={styles.empty}>{emptyMessage}</p>}
 
       {hud}
+
+      {notice && (
+        <p className={styles.notice} role="status" data-testid="stage-notice">
+          {notice}
+        </p>
+      )}
 
       {status.countdown !== null && (
         <div className={styles.countdown} data-testid="countdown" aria-live="assertive">

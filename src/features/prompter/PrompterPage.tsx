@@ -11,6 +11,7 @@ import { resolveKeymap } from '@/core/keymap/presets';
 import { spokenWords } from '@/core/script/ast';
 import { parseScript } from '@/core/script/parse';
 import { effectiveLineHeight, fontStackFor } from '@/features/fonts/fontSettings';
+import { useScriptFonts } from '@/features/fonts/useScriptFonts';
 import { useFormat, useT } from '@/i18n';
 import type { Script } from '@/storage/types';
 import { useLibrary } from '@/stores/library';
@@ -64,7 +65,9 @@ function Prompter({ script }: { script: Script }) {
 
   const fontFamily = fontStackFor(appearance);
   const lineHeight = effectiveLineHeight(appearance);
+  const fontStatus = useScriptFonts(appearance, script.body);
   const layoutKey = [
+    fontStatus,
     fontFamily,
     appearance.size,
     appearance.scaleWithWidth,
@@ -245,6 +248,13 @@ function Prompter({ script }: { script: Script }) {
           contentRef={contentRef}
           hud={appearance.hud.mirrorWithStage ? hud : null}
           emptyMessage={t('prompter.empty')}
+          notice={
+            fontStatus === 'loading'
+              ? t('fonts.loading')
+              : fontStatus === 'fallback'
+                ? t('fonts.fallback')
+                : null
+          }
         />
         {!appearance.hud.mirrorWithStage && hud}
       </div>

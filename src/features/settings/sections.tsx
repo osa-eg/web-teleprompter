@@ -5,7 +5,7 @@ import { useLibrary } from '@/stores/library';
 import { useSettings, type Appearance, type Behavior } from '@/stores/settings';
 import { Choice, ColorField, Section, Slider, Switch } from '@/ui/controls';
 import { FontField } from '@/features/fonts/FontField';
-import { effectiveLineHeight } from '@/features/fonts/fontSettings';
+import { effectiveLineHeight, weightOptions } from '@/features/fonts/fontSettings';
 import { COLOR_PRESETS } from './colorPresets';
 import styles from './sections.module.css';
 
@@ -35,10 +35,12 @@ export function TextSection({ script, rtlDominant }: TextSectionProps) {
   const [a, set] = useAppearance();
   const update = useLibrary((s) => s.update);
   const lineHeight = effectiveLineHeight(a);
+  const weights = weightOptions(a.font);
 
   return (
     <Section title={t('qs.text')}>
-      <FontField />
+      <FontField mode="primary" />
+      <FontField mode="latin" />
       <Slider
         label={t('qs.size')}
         value={a.size}
@@ -47,14 +49,23 @@ export function TextSection({ script, rtlDominant }: TextSectionProps) {
         step={2}
         onChange={(size) => set({ size })}
       />
-      <Slider
-        label={t('qs.weight')}
-        value={a.weight}
-        min={100}
-        max={900}
-        step={100}
-        onChange={(weight) => set({ weight })}
-      />
+      {Array.isArray(weights) ? (
+        <Choice
+          label={t('qs.weight')}
+          value={String(a.weight)}
+          onChange={(weight) => set({ weight: Number(weight) })}
+          options={weights.map((w) => ({ value: String(w), label: String(w) }))}
+        />
+      ) : (
+        <Slider
+          label={t('qs.weight')}
+          value={a.weight}
+          min={weights.min}
+          max={weights.max}
+          step={50}
+          onChange={(weight) => set({ weight })}
+        />
+      )}
       <Switch
         label={t('qs.lineHeightFromFont')}
         checked={a.lineHeightFromFont}

@@ -20,6 +20,9 @@ font uploads.
   والسحب باللمس.
 - **قواعد الطباعة العربية**: لا تباعد حروف في الأسطر العربية، وتمييز بالألوان بدل الميلان المزيف، وإخفاء التشكيل
   وتحويل الأرقام عند العرض فقط.
+- **الخطوط**: 46 خطاً عربياً (حديث، كوفي، نسخ، رقعة، نستعليق، عناوين، يدوي) + 10 خطوط لاتينية، مستضافة ذاتياً
+  وتُحمّل عند الحاجة فقط، مع معاينة حية وبحث وتصنيف، وارتفاع سطر مناسب لكل خط، وخط لاتيني منفصل اختياري للنصوص
+  المختلطة، ورفع خطوطك الخاصة (TTF/OTF/WOFF/WOFF2)، واستخدام خطوط الجهاز.
 - محرر بصيغة بسيطة (`**عريض**` `==تظليل==` `[[ملاحظة]]` `# قسم`) مع معاينة حية وإحصاءات.
 
 ---
@@ -32,6 +35,9 @@ font uploads.
 - **Controls** for keyboards (physical keys), presentation clickers, foot pedals, mouse wheel and touch.
 - **Arabic typography rules**: no letter spacing on Arabic lines, colored emphasis instead of fake italics,
   optional hidden diacritics and digit conversion at render time.
+- **Fonts**: 46 Arabic fonts (modern, Kufi, Naskh, Ruqaa, Nastaliq, display, handwriting) and 10 Latin
+  fonts, self-hosted and lazy-loaded, with live previews, search, per-font line heights, an optional
+  separate Latin font for mixed scripts, custom font uploads and fonts installed on the device.
 - Lightweight markup editor with live preview and statistics.
 
 ## التطوير · Development
@@ -44,12 +50,13 @@ npm run dev          # http://localhost:5173/web-teleprompter/
 npm run verify       # lint + typecheck + unit tests + build + Playwright e2e
 ```
 
-| Script              | Purpose                                         |
-| ------------------- | ----------------------------------------------- |
-| `npm run lint`      | ESLint + check that CSS uses logical properties |
-| `npm run typecheck` | TypeScript project build                        |
-| `npm test`          | Vitest unit (`*.test.ts`) and DOM tests         |
-| `npm run e2e`       | Playwright end-to-end tests (Chromium)          |
+| Script              | Purpose                                                      |
+| ------------------- | ------------------------------------------------------------ |
+| `npm run lint`      | ESLint + check that CSS uses logical properties              |
+| `npm run typecheck` | TypeScript project build                                     |
+| `npm test`          | Vitest unit (`*.test.ts`) and DOM tests                      |
+| `npm run e2e`       | Playwright end-to-end tests (Chromium)                       |
+| `npm run fonts:gen` | Regenerate the font catalog from `scripts/fonts.config.json` |
 
 ## النشر · Deployment
 

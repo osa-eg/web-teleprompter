@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
+import { fontsourceWoff2Only } from './scripts/vite-fontsource-woff2-only.ts';
 
 const FONT_FILE = /\.(woff2?|ttf|otf)$/i;
 
@@ -9,7 +10,7 @@ const base = process.env.BASE_PATH ?? '/web-teleprompter/';
 export default defineConfig({
   base,
   resolve: { tsconfigPaths: true },
-  plugins: [react()],
+  plugins: [fontsourceWoff2Only(), react()],
   build: {
     sourcemap: true,
     // Never inline fonts as base64 into CSS: they must stay separate, cacheable files.

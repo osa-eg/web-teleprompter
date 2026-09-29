@@ -7,6 +7,7 @@ import { findEditorMismatches, fixEditorMismatches } from '@/core/script/directi
 import { parseScript } from '@/core/script/parse';
 import { estimateDurationMs } from '@/core/script/stats';
 import { fontStackFor } from '@/features/fonts/fontSettings';
+import { useScriptFonts } from '@/features/fonts/useScriptFonts';
 import { useFormat, useT } from '@/i18n';
 import type { Script, TextDirSetting } from '@/storage/types';
 import { useLibrary } from '@/stores/library';
@@ -56,6 +57,7 @@ function Editor({ script }: { script: Script }) {
     [body, script.direction, uiLang],
   );
   const words = spokenWords(doc, behavior.headingsSpoken);
+  useScriptFonts(appearance, body);
   const mismatches = useMemo(
     () => (script.direction === 'auto' ? findEditorMismatches(body).length : 0),
     [body, script.direction],
