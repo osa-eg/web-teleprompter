@@ -263,6 +263,11 @@ export class ScrollEngine {
     this.touch();
   }
 
+  /** Moves to a token position immediately (e.g. to resume where the reader left off). */
+  jumpToPos(pos: number): void {
+    this.seekTo(posToPx(this.model, pos), SPRING.seek, false);
+  }
+
   /** Current continuous token position at the reading line. */
   getPos(): number {
     return pxToPos(this.model, this.px);
@@ -270,6 +275,21 @@ export class ScrollEngine {
 
   getPx(): number {
     return this.px;
+  }
+
+  /**
+   * Stops all motion and the frame loop without destroying the engine (used when the view unmounts
+   * or is hidden; any later command restarts it).
+   */
+  halt(): void {
+    if (this.play === 'playing' || this.play === 'countdown') this.pause();
+    this.v = 0;
+    this.spring = null;
+    this.fling = 0;
+    this.dragging = false;
+    if (this.rafId !== null) this.host.caf(this.rafId);
+    this.rafId = null;
+    this.lastFrame = null;
   }
 
   destroy(): void {

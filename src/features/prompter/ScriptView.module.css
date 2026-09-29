@@ -1,0 +1,99 @@
+/*
+ * Script typography. The container provides these custom properties:
+ * --tp-align, --tp-ls, --tp-weight, --tp-fg, --tp-bg, --tp-mark, --tp-note, --tp-cue, --tp-em, --tp-guide.
+ */
+
+.block {
+  margin: 0;
+}
+
+.para + .para,
+.cueBlock + .para,
+.para + .cueBlock,
+.para + .heading {
+  margin-block-start: 0.55em;
+}
+
+.heading {
+  margin-block: 0.5em 0.25em;
+  font-size: 0.72em;
+  font-weight: 800;
+  color: var(--tp-guide, currentColor);
+  opacity: 0.85;
+}
+
+.heading:first-child {
+  margin-block-start: 0;
+}
+
+.line {
+  text-align: var(--tp-align, start);
+}
+
+[data-align='justify'] .line {
+  text-align: justify;
+  text-align-last: start;
+}
+
+/* Letter spacing breaks the cursive joining of Arabic, so it only applies to left-to-right lines. */
+.line[dir='ltr'] {
+  letter-spacing: var(--tp-ls, 0);
+}
+
+.line[dir='rtl'] {
+  letter-spacing: 0;
+}
+
+.line strong {
+  font-weight: min(calc(var(--tp-weight, 400) + 300), 1000);
+}
+
+.line[dir='ltr'] em {
+  font-style: italic;
+}
+
+/* Arabic has no true italic: emphasis is shown with color instead of a slanted fake. */
+.line[dir='rtl'] em {
+  font-style: normal;
+  color: var(--tp-em, currentColor);
+}
+
+.mark {
+  background: var(--tp-mark, #ffd60a);
+  color: var(--tp-bg, #000);
+  border-radius: 0.12em;
+  padding-inline: 0.08em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.note {
+  font-size: 0.55em;
+  font-weight: 500;
+  font-style: normal;
+  color: var(--tp-note, gray);
+  vertical-align: middle;
+}
+
+[data-notes='hidden'] .note {
+  display: none;
+}
+
+.cue {
+  display: inline-block;
+  vertical-align: middle;
+  margin-inline: 0.25em;
+  padding-inline: 0.55em;
+  border: 0.1em solid currentColor;
+  border-radius: 1em;
+  color: var(--tp-cue, tomato);
+  font-size: 0.42em;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+.cueBlock {
+  text-align: center;
+  margin-block: 0.3em;
+}

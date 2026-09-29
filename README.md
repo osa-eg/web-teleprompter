@@ -11,10 +11,28 @@ font uploads.
 
 ## المزايا · Features
 
-- مكتبة نصوص محلية (IndexedDB) مع بحث يتجاهل التشكيل واختلاف أشكال الحروف، وحفظ تلقائي.
-- واجهة ثنائية اللغة (العربية/English) تنقلب تلقائياً بين RTL وLTR، مع سمة داكنة/فاتحة.
-- Local script library (IndexedDB) with diacritic-insensitive search and autosave.
-- Bilingual interface (Arabic/English) that flips between RTL and LTR, dark/light themes.
+- **اتجاه النص**: تلقائي لكل سطر حسب أغلبية الكلمات (فـ«iPhone 17 هو أحدث هاتف» يبقى من اليمين لليسار)، أو فرض
+  RTL/LTR للنص كله، مع علامات RLM/LRM لفرض اتجاه سطر بعينه. المرآة (أفقية/عمودية) مستقلة عن الاتجاه.
+- **تمرير سلس بسرعة كلمة/دقيقة**: لا يتغير إيقاع القراءة عند تكبير الخط، مع تسارع ناعم، وعد تنازلي، ومدة مستهدفة،
+  وإشارات توقف `[توقف]` و`[وقفة ٣]`، وأقسام للقفز بينها، وحفظ موضع القراءة.
+- **خط القراءة**: شريط/خط/أسهم في جهة بداية السطر، مع تعتيم وتلاشي الحواف ومؤقت ووقت متبقٍ.
+- **تحكم كامل**: لوحة المفاتيح (بالمفاتيح الفعلية فتعمل مع اللوحة العربية)، أجهزة Clicker ودواسات القدم، العجلة،
+  والسحب باللمس.
+- **قواعد الطباعة العربية**: لا تباعد حروف في الأسطر العربية، وتمييز بالألوان بدل الميلان المزيف، وإخفاء التشكيل
+  وتحويل الأرقام عند العرض فقط.
+- محرر بصيغة بسيطة (`**عريض**` `==تظليل==` `[[ملاحظة]]` `# قسم`) مع معاينة حية وإحصاءات.
+
+---
+
+- **Text direction**: automatic per line by majority of words, or forced RTL/LTR, with RLM/LRM overrides;
+  mirroring is independent of direction.
+- **Smooth words-per-minute scrolling** that keeps its pace when the font size changes, with ramping,
+  countdown, target duration, pause cues, section markers and resume position.
+- **Reading guide** (band, line, arrows on the line-start side), dimming, edge fades and a talent timer.
+- **Controls** for keyboards (physical keys), presentation clickers, foot pedals, mouse wheel and touch.
+- **Arabic typography rules**: no letter spacing on Arabic lines, colored emphasis instead of fake italics,
+  optional hidden diacritics and digit conversion at render time.
+- Lightweight markup editor with live preview and statistics.
 
 ## التطوير · Development
 

@@ -35,9 +35,8 @@ export function isEditableTarget(target: EventTarget | null): boolean {
   if (element.isContentEditable) return true;
   const field = element.closest('input, textarea, select, [contenteditable="true"]');
   if (!field) return false;
-  if (field instanceof HTMLInputElement) {
-    return !['button', 'checkbox', 'radio', 'range', 'color', 'submit', 'reset'].includes(field.type);
-  }
+  // Sliders, switches and number fields use arrow keys/Space themselves; only push buttons don't.
+  if (field instanceof HTMLInputElement) return !['button', 'submit', 'reset', 'image'].includes(field.type);
   return true;
 }
 

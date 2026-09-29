@@ -1,0 +1,16 @@
+.preview {
+  overflow-y: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--tp-bg);
+  color: var(--tp-fg);
+}
+
+.text {
+  padding: 24px 28px;
+  font-family: var(--tp-font);
+  font-size: calc(var(--tp-size) * var(--tp-unit));
+  font-weight: var(--tp-weight);
+  line-height: var(--tp-lh);
+  word-spacing: var(--tp-ws);
+}

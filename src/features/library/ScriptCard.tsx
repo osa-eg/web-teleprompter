@@ -74,7 +74,7 @@ export const ScriptCard = memo(function ScriptCard({ script }: { script: Script 
           to={`/s/${script.id}/prompt`}
           variant="primary"
           size="sm"
-          icon={<Play size={16} aria-hidden className="flip-rtl" />}
+          icon={<Play size={16} aria-hidden />}
         >
           {t('action.prompt')}
         </ButtonLink>

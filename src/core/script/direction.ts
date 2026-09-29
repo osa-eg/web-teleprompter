@@ -67,3 +67,33 @@ export function toggleLineMark(line: string): string {
 }
 
 export const DIRECTION_MARKS = { RLM, ALM, LRM } as const;
+
+/**
+ * Lines whose direction by majority of words differs from the browser's first-strong rule. A plain
+ * textarea (unicode-bidi: plaintext) shows such lines in the wrong direction unless they start with
+ * an explicit mark. Returns 0-based line indices.
+ */
+export function findEditorMismatches(body: string): number[] {
+  const mismatches: number[] = [];
+  body.split('\n').forEach((line, index) => {
+    if (leadingMarkDir(line)) return;
+    const first = firstStrongDir(line);
+    if (!first) return;
+    if (detectLineDir(line, first) !== first) mismatches.push(index);
+  });
+  return mismatches;
+}
+
+/** Prefixes each mismatched line with RLM/LRM so the editor shows it like the prompter does. */
+export function fixEditorMismatches(body: string): string {
+  const targets = new Set(findEditorMismatches(body));
+  return body
+    .split('\n')
+    .map((line, index) => {
+      if (!targets.has(index)) return line;
+      const trimmed = line.trimStart();
+      const indent = line.slice(0, line.length - trimmed.length);
+      return indent + (detectLineDir(line, 'ltr') === 'rtl' ? RLM : LRM) + trimmed;
+    })
+    .join('\n');
+}

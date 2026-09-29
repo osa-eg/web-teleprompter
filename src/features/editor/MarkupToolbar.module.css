@@ -1,0 +1,65 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.separator {
+  inline-size: 1px;
+  block-size: 20px;
+  margin-inline: var(--space-1);
+  background: var(--border);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.syntax {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-1) var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 13.5px;
+}
+
+.syntaxRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.syntaxRow dt {
+  flex: none;
+  min-inline-size: 110px;
+}
+
+.syntaxRow code {
+  padding-block: 1px;
+  padding-inline: 6px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  unicode-bidi: plaintext;
+}
+
+.syntaxRow dd {
+  margin: 0;
+  color: var(--text-muted);
+}
