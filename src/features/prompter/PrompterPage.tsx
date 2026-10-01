@@ -33,6 +33,7 @@ import { useLibrary } from '@/stores/library';
 import { useSettings } from '@/stores/settings';
 import { ButtonLink } from '@/ui/Button';
 import { toast } from '@/ui/toast';
+import { FullscreenHelpDialog } from './FullscreenHelpDialog';
 import { HelpDialog } from './HelpDialog';
 import { useFullscreen, useIdle, useKeymap, usePointerScroll, useWakeLock } from './hooks';
 import { useMediaKeys } from './useMediaKeys';
@@ -172,6 +173,7 @@ function Prompter({ script, role, sid }: PrompterProps) {
 
   const [panel, setPanel] = useState<Panel | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [fullscreenHelpOpen, setFullscreenHelpOpen] = useState(false);
   const [overlayDismissed, setOverlayDismissed] = useState(false);
   const [voiceOn, setVoiceOn] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
@@ -181,7 +183,8 @@ function Prompter({ script, role, sid }: PrompterProps) {
   const playing = status.play === 'playing' || status.play === 'countdown';
   // The display window's welcome card goes away for good once the show starts.
   if (isDisplay && playing && !overlayDismissed) setOverlayDismissed(true);
-  const idle = useIdle(2500, (playing || isDisplay) && panel === null);
+  // Controls slide away while reading, and in full screen even when paused (a tap brings them back).
+  const idle = useIdle(2500, (playing || isDisplay || fullscreen.active) && panel === null);
   const keymap = useMemo(
     () => resolveKeymap(settings.keymap.preset, settings.keymap.overrides),
     [settings.keymap],
@@ -314,6 +317,8 @@ function Prompter({ script, role, sid }: PrompterProps) {
           });
         }
         case 'toggleFullscreen':
+          // iPhone Safari has no full screen for pages: explain the Home Screen app instead.
+          if (!fullscreen.supported) return fullscreen.iphoneHelp ? setFullscreenHelpOpen(true) : undefined;
           return fullscreen.toggle();
         case 'help':
           return setHelpOpen((open) => !open);
@@ -440,6 +445,7 @@ function Prompter({ script, role, sid }: PrompterProps) {
               onToggle={toggleRecording}
             />
           }
+          recordingActive={recording.state !== 'idle'}
           voiceStatus={
             <VoiceIndicator
               status={voice.status}
@@ -507,6 +513,7 @@ function Prompter({ script, role, sid }: PrompterProps) {
       )}
 
       <HelpDialog open={helpOpen} keymap={keymap} onClose={() => setHelpOpen(false)} />
+      <FullscreenHelpDialog open={fullscreenHelpOpen} onClose={() => setFullscreenHelpOpen(false)} />
     </div>
   );
 }

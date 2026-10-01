@@ -14,6 +14,7 @@ import {
   Minimize,
   Minus,
   MonitorUp,
+  MoreHorizontal,
   Pause,
   Play,
   Plus,
@@ -23,7 +24,7 @@ import {
   Video,
   VideoOff,
 } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { Command } from '@/core/commands/types';
 import type { Marker } from '@/core/script/ast';
@@ -31,7 +32,11 @@ import type { EngineStatus } from '@/core/engine/types';
 import { useFormat, useT } from '@/i18n';
 import type { ViewSettings } from '@/stores/settingsSchema';
 import { IconButton } from '@/ui/Button';
+import { useMediaQuery } from './hooks';
 import styles from './OperatorBar.module.css';
+
+/** Phones in landscape (and other short screens) get a single row of essential controls. */
+export const COMPACT_QUERY = '(max-height: 520px)';
 
 export type Panel = 'settings' | 'display' | 'remote';
 
@@ -42,7 +47,7 @@ interface OperatorBarProps {
   /** Mirroring of the window the talent reads (the display window when one is connected). */
   mirror: ViewSettings;
   hidden: boolean;
-  fullscreen: { supported: boolean; active: boolean };
+  fullscreen: { supported: boolean; active: boolean; iphoneHelp: boolean };
   editorHref: string;
   panel: Panel | null;
   displayConnected: boolean;
@@ -53,6 +58,8 @@ interface OperatorBarProps {
   cameraOn?: boolean;
   /** Record button and recording time. */
   recordControl?: ReactNode;
+  /** A recording is running or armed (kept in view on compact screens). */
+  recordingActive?: boolean;
   onCommand: (command: Command) => void;
   onPanel: (panel: Panel) => void;
 }
@@ -73,15 +80,25 @@ export function OperatorBar({
   voiceStatus,
   cameraOn = false,
   recordControl,
+  recordingActive = false,
   onCommand,
   onPanel,
 }: OperatorBarProps) {
   const t = useT();
   const fmt = useFormat();
   const playing = status.play === 'playing' || status.play === 'countdown';
+  const compact = useMediaQuery(COMPACT_QUERY);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const showTools = !compact || moreOpen;
+  const toolsBusy = voiceOn || cameraOn || recordingActive || displayConnected || remoteDevices > 0;
 
   return (
-    <div className={clsx(styles.bar, hidden && styles.hidden)} data-testid="operator-bar">
+    <div
+      className={clsx(styles.bar, hidden && styles.hidden)}
+      data-testid="operator-bar"
+      data-compact={compact || undefined}
+      data-hidden={hidden || undefined}
+    >
       <div className={styles.progressRow}>
         <span className={styles.time} dir="ltr">
           {fmt.duration(status.elapsedMs)}
@@ -143,7 +160,7 @@ export function OperatorBar({
           <IconButton
             label={playing ? t('prompter.pause') : t('prompter.play')}
             variant="primary"
-            size="lg"
+            size={compact ? 'md' : 'lg'}
             className={styles.play}
             data-testid="play-toggle"
             onClick={() => onCommand({ type: 'toggle' })}
@@ -156,6 +173,16 @@ export function OperatorBar({
           >
             <ChevronsDown size={22} aria-hidden />
           </IconButton>
+          {(fullscreen.supported || fullscreen.iphoneHelp) && (
+            <IconButton
+              label={fullscreen.active ? t('prompter.exitFullscreen') : t('prompter.fullscreen')}
+              pressed={fullscreen.active}
+              data-testid="fullscreen-button"
+              onClick={() => onCommand({ type: 'toggleFullscreen' })}
+            >
+              {fullscreen.active ? <Minimize size={20} aria-hidden /> : <Maximize size={20} aria-hidden />}
+            </IconButton>
+          )}
         </div>
 
         <div className={styles.group} role="group" aria-label={t('prompter.wpmLabel')}>
@@ -170,88 +197,98 @@ export function OperatorBar({
           </IconButton>
         </div>
 
-        <div className={clsx(styles.group, styles.tools)}>
-          {recordControl}
-          <IconButton
-            label={t('camera.toggle')}
-            pressed={cameraOn}
-            data-testid="camera-button"
-            onClick={() => onCommand({ type: 'toggleCamera' })}
-          >
-            {cameraOn ? <Video size={20} aria-hidden /> : <VideoOff size={20} aria-hidden />}
-          </IconButton>
-          {voiceStatus}
-          <IconButton
-            label={t('voice.title')}
-            pressed={voiceOn}
-            data-testid="voice-button"
-            onClick={() => onCommand({ type: 'toggleVoice' })}
-          >
-            {voiceOn ? <Mic size={20} aria-hidden /> : <MicOff size={20} aria-hidden />}
-          </IconButton>
-          <IconButton
-            label={t('prompter.fontSmaller')}
-            onClick={() => onCommand({ type: 'nudgeFontSize', steps: -1 })}
-          >
-            <AArrowDown size={20} aria-hidden />
-          </IconButton>
-          <IconButton
-            label={t('prompter.fontBigger')}
-            onClick={() => onCommand({ type: 'nudgeFontSize', steps: 1 })}
-          >
-            <AArrowUp size={20} aria-hidden />
-          </IconButton>
-          <IconButton
-            label={t('prompter.mirrorH')}
-            pressed={mirror.mirrorH}
-            onClick={() => onCommand({ type: 'toggleMirror', axis: 'h' })}
-          >
-            <FlipHorizontal2 size={20} aria-hidden />
-          </IconButton>
-          <IconButton
-            label={t('prompter.mirrorV')}
-            pressed={mirror.mirrorV}
-            onClick={() => onCommand({ type: 'toggleMirror', axis: 'v' })}
-          >
-            <FlipVertical2 size={20} aria-hidden />
-          </IconButton>
-          <IconButton
-            label={t('prompter.settings')}
-            pressed={panel === 'settings'}
-            onClick={() => onPanel('settings')}
-          >
-            <SlidersHorizontal size={20} aria-hidden />
-          </IconButton>
-          <IconButton
-            label={t('display.title')}
-            pressed={panel === 'display'}
-            className={clsx(displayConnected && styles.linked)}
-            data-testid="display-button"
-            onClick={() => onPanel('display')}
-          >
-            <MonitorUp size={20} aria-hidden />
-          </IconButton>
-          <IconButton
-            label={t('remote.title')}
-            pressed={panel === 'remote'}
-            className={clsx(remoteDevices > 0 && styles.linked)}
-            data-testid="remote-button"
-            onClick={() => onPanel('remote')}
-          >
-            <Smartphone size={20} aria-hidden />
-          </IconButton>
-          <IconButton label={t('prompter.help')} onClick={() => onCommand({ type: 'help' })}>
-            <Keyboard size={20} aria-hidden />
-          </IconButton>
-          {fullscreen.supported && (
+        {compact && (
+          <div className={styles.group}>
+            {recordingActive && !moreOpen && recordControl}
             <IconButton
-              label={fullscreen.active ? t('prompter.exitFullscreen') : t('prompter.fullscreen')}
-              onClick={() => onCommand({ type: 'toggleFullscreen' })}
+              label={t('prompter.moreTools')}
+              pressed={moreOpen}
+              aria-expanded={moreOpen}
+              className={clsx(toolsBusy && styles.linked)}
+              data-testid="more-tools"
+              onClick={() => setMoreOpen((open) => !open)}
             >
-              {fullscreen.active ? <Minimize size={20} aria-hidden /> : <Maximize size={20} aria-hidden />}
+              <MoreHorizontal size={20} aria-hidden />
             </IconButton>
-          )}
-        </div>
+          </div>
+        )}
+
+        {showTools && (
+          <div className={clsx(styles.group, styles.tools)} data-testid="tools">
+            {recordControl}
+            <IconButton
+              label={t('camera.toggle')}
+              pressed={cameraOn}
+              data-testid="camera-button"
+              onClick={() => onCommand({ type: 'toggleCamera' })}
+            >
+              {cameraOn ? <Video size={20} aria-hidden /> : <VideoOff size={20} aria-hidden />}
+            </IconButton>
+            {voiceStatus}
+            <IconButton
+              label={t('voice.title')}
+              pressed={voiceOn}
+              data-testid="voice-button"
+              onClick={() => onCommand({ type: 'toggleVoice' })}
+            >
+              {voiceOn ? <Mic size={20} aria-hidden /> : <MicOff size={20} aria-hidden />}
+            </IconButton>
+            <IconButton
+              label={t('prompter.fontSmaller')}
+              onClick={() => onCommand({ type: 'nudgeFontSize', steps: -1 })}
+            >
+              <AArrowDown size={20} aria-hidden />
+            </IconButton>
+            <IconButton
+              label={t('prompter.fontBigger')}
+              onClick={() => onCommand({ type: 'nudgeFontSize', steps: 1 })}
+            >
+              <AArrowUp size={20} aria-hidden />
+            </IconButton>
+            <IconButton
+              label={t('prompter.mirrorH')}
+              pressed={mirror.mirrorH}
+              onClick={() => onCommand({ type: 'toggleMirror', axis: 'h' })}
+            >
+              <FlipHorizontal2 size={20} aria-hidden />
+            </IconButton>
+            <IconButton
+              label={t('prompter.mirrorV')}
+              pressed={mirror.mirrorV}
+              onClick={() => onCommand({ type: 'toggleMirror', axis: 'v' })}
+            >
+              <FlipVertical2 size={20} aria-hidden />
+            </IconButton>
+            <IconButton
+              label={t('prompter.settings')}
+              pressed={panel === 'settings'}
+              onClick={() => onPanel('settings')}
+            >
+              <SlidersHorizontal size={20} aria-hidden />
+            </IconButton>
+            <IconButton
+              label={t('display.title')}
+              pressed={panel === 'display'}
+              className={clsx(displayConnected && styles.linked)}
+              data-testid="display-button"
+              onClick={() => onPanel('display')}
+            >
+              <MonitorUp size={20} aria-hidden />
+            </IconButton>
+            <IconButton
+              label={t('remote.title')}
+              pressed={panel === 'remote'}
+              className={clsx(remoteDevices > 0 && styles.linked)}
+              data-testid="remote-button"
+              onClick={() => onPanel('remote')}
+            >
+              <Smartphone size={20} aria-hidden />
+            </IconButton>
+            <IconButton label={t('prompter.help')} onClick={() => onCommand({ type: 'help' })}>
+              <Keyboard size={20} aria-hidden />
+            </IconButton>
+          </div>
+        )}
       </div>
     </div>
   );

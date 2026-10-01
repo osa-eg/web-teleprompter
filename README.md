@@ -13,6 +13,8 @@ font uploads.
   RTL/LTR للنص كله، مع علامات RLM/LRM لفرض اتجاه سطر بعينه. المرآة (أفقية/عمودية) مستقلة عن الاتجاه.
 - **تمرير سلس بسرعة كلمة/دقيقة**: لا يتغير إيقاع القراءة عند تكبير الخط، مع تسارع ناعم، وعد تنازلي، ومدة مستهدفة،
   وإشارات توقف `[توقف]` و`[وقفة ٣]`، وأقسام للقفز بينها، وحفظ موضع القراءة.
+- **ملء الشاشة على اللابتوب والموبايل**: زر ⛶ بجوار التشغيل (أو مفتاح F)، وشريط تحكم من صف واحد في الوضع الأفقي،
+  وفي ملء الشاشة يختفي الشريط تلقائياً فيبقى النص وحده. على iPhone أضِف الملقّن إلى الشاشة الرئيسية ليعمل بلا أشرطة.
 - **خط القراءة**: شريط/خط/أسهم في جهة بداية السطر، مع تعتيم وتلاشي الحواف ومؤقت ووقت متبقٍ.
 - **تحكم كامل**: لوحة المفاتيح (بالمفاتيح الفعلية فتعمل مع اللوحة العربية)، أجهزة Clicker ودواسات القدم، العجلة،
   والسحب باللمس.
@@ -53,6 +55,9 @@ font uploads.
   mirroring is independent of direction.
 - **Smooth words-per-minute scrolling** that keeps its pace when the font size changes, with ramping,
   countdown, target duration, pause cues, section markers and resume position.
+- **Full screen on laptops and phones**: a ⛶ button next to play (or the F key), one-row controls in
+  landscape, and in full screen the controls slide away so only the text remains. On iPhone, add the prompter
+  to the Home Screen to run it without browser bars.
 - **Reading guide** (band, line, arrows on the line-start side), dimming, edge fades and a talent timer.
 - **Controls** for keyboards (physical keys), presentation clickers, foot pedals, mouse wheel and touch.
 - **Arabic typography rules**: no letter spacing on Arabic lines, colored emphasis instead of fake italics,

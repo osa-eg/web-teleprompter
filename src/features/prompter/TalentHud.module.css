@@ -27,8 +27,9 @@
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 1em;
-  padding-block: 0.5em;
-  padding-inline: 1.2em;
+  padding-block: max(0.5em, env(safe-area-inset-top)) 0.5em;
+  /* Phones in landscape: keep clear of the notch on either side. */
+  padding-inline: max(1.2em, env(safe-area-inset-left), env(safe-area-inset-right));
 }
 
 .cell {

@@ -264,6 +264,13 @@ export const ar: Messages = {
   'prompter.holding': 'وقفة',
   'prompter.cue': 'توقف',
   'prompter.cueSeconds': '{seconds} ث',
+  'prompter.moreTools': 'أدوات أخرى',
+  'fullscreen.iphoneTitle': 'ملء الشاشة على iPhone',
+  'fullscreen.iphoneIntro':
+    'لا يسمح Safari على iPhone للصفحات بإخفاء أشرطته. طريقتان للحصول على الشاشة كاملة:',
+  'fullscreen.iphoneHome':
+    'الأفضل: اضغط زر المشاركة (المربع والسهم)، واختر «إضافة إلى الشاشة الرئيسية»، ثم افتح الملقّن من أيقونته الجديدة؛ سيفتح بلا أي أشرطة.',
+  'fullscreen.iphoneToolbar': 'الآن مباشرة: اضغط «aA» في شريط العنوان واختر «إخفاء شريط الأدوات».',
   'prompter.tapToStart': 'اضغط المسافة أو ▶ للبدء',
 
   'display.title': 'نافذة العرض',

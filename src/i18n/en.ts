@@ -225,6 +225,13 @@ export const en = {
   'prompter.holding': 'Pause',
   'prompter.cue': 'Pause',
   'prompter.cueSeconds': '{seconds} s',
+  'prompter.moreTools': 'More controls',
+  'fullscreen.iphoneTitle': 'Full screen on iPhone',
+  'fullscreen.iphoneIntro':
+    'Safari on iPhone does not let web pages hide its bars. Two ways to get the whole screen:',
+  'fullscreen.iphoneHome':
+    'Best: tap Share (the square with an arrow), choose “Add to Home Screen”, then open the prompter from its new icon. It opens without any browser bars.',
+  'fullscreen.iphoneToolbar': 'Right now: tap “aA” in the address bar and choose “Hide Toolbar”.',
   'prompter.tapToStart': 'Press Space or tap ▶ to start',
 
   'display.title': 'Display window',
