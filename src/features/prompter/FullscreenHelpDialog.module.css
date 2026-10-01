@@ -1,0 +1,65 @@
+.dialog {
+  inline-size: min(520px, calc(100vw - 32px));
+  max-block-size: calc(100dvh - 32px);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  font-family: var(--font-ui);
+}
+
+.dialog::backdrop {
+  background: rgb(0 0 0 / 0.6);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: var(--space-2);
+  padding-inline: var(--space-5) var(--space-2);
+  border-block-end: 1px solid var(--border);
+}
+
+.header h2 {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.muted {
+  padding-block: var(--space-3) 0;
+  padding-inline: var(--space-5);
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding-block: var(--space-3) var(--space-5);
+  padding-inline: var(--space-5);
+  list-style: none;
+}
+
+.steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  line-height: 1.7;
+}
+
+.icon,
+.aa {
+  flex: none;
+  margin-block-start: 3px;
+  color: var(--accent-text);
+}
+
+.aa {
+  font-weight: 800;
+  font-size: 15px;
+}

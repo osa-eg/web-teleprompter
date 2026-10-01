@@ -32,19 +32,73 @@ export function useWakeLock(active: boolean): void {
   }, [active]);
 }
 
+/** Safari before 16.4 (macOS, iPadOS) only has the prefixed Fullscreen API. */
+interface WebkitDocument extends Document {
+  webkitFullscreenEnabled?: boolean;
+  webkitFullscreenElement?: Element | null;
+  webkitExitFullscreen?: () => void;
+}
+
+interface WebkitElement extends HTMLElement {
+  webkitRequestFullscreen?: () => void;
+}
+
+function fullscreenElement(): Element | null {
+  return document.fullscreenElement ?? (document as WebkitDocument).webkitFullscreenElement ?? null;
+}
+
 function subscribeFullscreen(callback: () => void) {
   document.addEventListener('fullscreenchange', callback);
-  return () => document.removeEventListener('fullscreenchange', callback);
+  document.addEventListener('webkitfullscreenchange', callback);
+  return () => {
+    document.removeEventListener('fullscreenchange', callback);
+    document.removeEventListener('webkitfullscreenchange', callback);
+  };
+}
+
+/**
+ * Safari on iPhone cannot put a web page in full screen; added to the Home Screen, the app opens
+ * without browser bars instead (true here only while it still runs in the browser).
+ */
+function iphoneBrowser(): boolean {
+  if (typeof navigator === 'undefined' || !/iPhone|iPod/.test(navigator.userAgent)) return false;
+  const standalone =
+    (navigator as Navigator & { standalone?: boolean }).standalone === true ||
+    window.matchMedia?.('(display-mode: standalone), (display-mode: fullscreen)').matches;
+  return !standalone;
 }
 
 export function useFullscreen() {
-  const active = useSyncExternalStore(subscribeFullscreen, () => document.fullscreenElement !== null);
-  const supported = typeof document !== 'undefined' && document.fullscreenEnabled;
+  const active = useSyncExternalStore(subscribeFullscreen, () => fullscreenElement() !== null);
+  const doc = typeof document === 'undefined' ? null : (document as WebkitDocument);
+  const supported = !!doc && (doc.fullscreenEnabled || doc.webkitFullscreenEnabled === true);
   const toggle = useCallback(() => {
-    if (document.fullscreenElement) void document.exitFullscreen().catch(() => undefined);
-    else void document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => undefined);
+    const webkit = document as WebkitDocument;
+    if (fullscreenElement()) {
+      if (document.exitFullscreen) void document.exitFullscreen().catch(() => undefined);
+      else webkit.webkitExitFullscreen?.();
+      return;
+    }
+    const root = document.documentElement as WebkitElement;
+    if (root.requestFullscreen) void root.requestFullscreen({ navigationUI: 'hide' }).catch(() => undefined);
+    else root.webkitRequestFullscreen?.();
   }, []);
-  return { supported, active, toggle };
+  /** No full screen here, but the iPhone guide (Add to Home Screen) helps. */
+  const iphoneHelp = !supported && iphoneBrowser();
+  return { supported, active, toggle, iphoneHelp };
+}
+
+/** Live result of a CSS media query. */
+export function useMediaQuery(query: string): boolean {
+  const subscribe = useCallback(
+    (callback: () => void) => {
+      const list = window.matchMedia(query);
+      list.addEventListener('change', callback);
+      return () => list.removeEventListener('change', callback);
+    },
+    [query],
+  );
+  return useSyncExternalStore(subscribe, () => window.matchMedia(query).matches);
 }
 
 /** True after `ms` without pointer/keyboard activity (used to hide controls and the cursor). */

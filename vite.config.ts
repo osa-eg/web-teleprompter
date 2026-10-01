@@ -33,7 +33,9 @@ export default defineConfig({
         lang: 'ar',
         start_url: base,
         scope: base,
-        display: 'standalone',
+        // Installed, the prompter uses the whole screen (no status or navigation bars).
+        display: 'fullscreen',
+        display_override: ['fullscreen', 'standalone'],
         orientation: 'any',
         background_color: '#0f1115',
         theme_color: '#0f1115',
