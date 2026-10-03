@@ -4,29 +4,42 @@ import { isEditableTarget, matchAction } from '@/core/keymap/match';
 import type { Keymap } from '@/core/keymap/presets';
 import type { ScrollEngine } from '@/core/engine/ScrollEngine';
 
-/** Keeps the screen awake while `active` (re-acquired when the page becomes visible again). */
+/** Input that counts as a user gesture, which Safari on iPhone may require before granting a wake lock. */
+const WAKE_LOCK_GESTURES = ['touchend', 'click', 'keydown'] as const;
+
+/**
+ * Keeps the screen awake while `active`. A lock that was denied or lost (the page was hidden, or
+ * Safari wanted a tap first) is taken again when the page is visible and on the next tap or key.
+ */
 export function useWakeLock(active: boolean): void {
   useEffect(() => {
     if (!active || !('wakeLock' in navigator)) return;
     let sentinel: WakeLockSentinel | null = null;
     let disposed = false;
+    const held = () => sentinel !== null && !sentinel.released;
     const request = async () => {
+      if (held() || document.visibilityState !== 'visible') return;
       try {
         const lock = await navigator.wakeLock.request('screen');
-        if (disposed) void lock.release();
+        // A tap fires several gesture events, so a second request may resolve after the first.
+        if (disposed || held()) void lock.release();
         else sentinel = lock;
       } catch {
-        // Denied (e.g. battery saver or not visible): the prompter still works.
+        // Denied (e.g. battery saver, or no tap yet on iPhone): the prompter still works.
       }
     };
-    const onVisibility = () => {
-      if (document.visibilityState === 'visible' && (!sentinel || sentinel.released)) void request();
-    };
+    const retry = () => void request();
     void request();
-    document.addEventListener('visibilitychange', onVisibility);
+    document.addEventListener('visibilitychange', retry);
+    for (const event of WAKE_LOCK_GESTURES) {
+      window.addEventListener(event, retry, { passive: true, capture: true });
+    }
     return () => {
       disposed = true;
-      document.removeEventListener('visibilitychange', onVisibility);
+      document.removeEventListener('visibilitychange', retry);
+      for (const event of WAKE_LOCK_GESTURES) {
+        window.removeEventListener(event, retry, { capture: true });
+      }
       void sentinel?.release().catch(() => undefined);
     };
   }, [active]);
