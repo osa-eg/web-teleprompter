@@ -41,14 +41,17 @@ function escapeText(text: string): string {
   return text.replace(/([\\*=[\]])/g, '\\$1');
 }
 
+/** An explicit font weight wins over the tag: Google Docs wraps every copy in `<b style="font-weight:normal">`. */
 function isBold(el: HTMLElement): boolean {
-  if (el.tagName === 'STRONG' || el.tagName === 'B') return true;
   const weight = el.style?.fontWeight;
-  return weight === 'bold' || Number(weight) >= 600;
+  if (weight) return weight === 'bold' || weight === 'bolder' || Number(weight) >= 600;
+  return el.tagName === 'STRONG' || el.tagName === 'B';
 }
 
 function isItalic(el: HTMLElement): boolean {
-  return el.tagName === 'EM' || el.tagName === 'I' || el.style?.fontStyle === 'italic';
+  const style = el.style?.fontStyle;
+  if (style) return style === 'italic' || style === 'oblique';
+  return el.tagName === 'EM' || el.tagName === 'I';
 }
 
 function isMark(el: HTMLElement): boolean {
@@ -87,59 +90,129 @@ function cleanLines(text: string): string {
     .trim();
 }
 
-function blocks(root: Element, out: string[]): void {
+const BLOCK_SELECTOR = [...BLOCK_TAGS].join(',');
+
+/** A converted block, or `null` for an empty paragraph: a blank line the author typed. */
+interface Piece {
+  text: string;
+  /** The block has an explicit zero top/bottom margin (Google Docs lines), so no gap shows around it. */
+  flushTop: boolean;
+  flushBottom: boolean;
+}
+
+const isZero = (length: string | undefined) => !!length && parseFloat(length) === 0;
+
+function piece(text: string, el?: HTMLElement): Piece {
+  return { text, flushTop: isZero(el?.style.marginTop), flushBottom: isZero(el?.style.marginBottom) };
+}
+
+function blocks(root: Element, out: (Piece | null)[]): void {
   let buffer = '';
   const flush = () => {
     const text = cleanLines(buffer);
-    if (text) out.push(text);
+    if (text) out.push(piece(text));
+    // Line breaks with no text between blocks are empty paragraphs (Google Docs copies them as <br>).
+    else for (let i = buffer.split('\n').length - 1; i > 0; i--) out.push(null);
     buffer = '';
   };
 
   for (const node of root.childNodes) {
-    if (node.nodeType === Node.ELEMENT_NODE && BLOCK_TAGS.has((node as Element).tagName)) {
-      flush();
-      const el = node as HTMLElement;
-      const tag = el.tagName;
-      if (/^H[1-6]$/.test(tag)) {
-        const level = Math.min(3, Number(tag[1]));
-        const text = cleanLines(inline(el)).replace(/\n/g, ' ');
-        if (text) out.push(`${'#'.repeat(level)} ${text}`);
-      } else if (tag === 'UL' || tag === 'OL') {
-        const items = [...el.children].filter((child) => child.tagName === 'LI');
-        const lines = items
-          .map((item, i) => {
-            const text = cleanLines(inline(item)).replace(/\n/g, ' ');
-            return text ? `${tag === 'OL' ? `${i + 1}.` : '•'} ${text}` : '';
-          })
-          .filter(Boolean);
-        if (lines.length) out.push(lines.join('\n'));
-      } else if (tag === 'TABLE') {
-        const rows = [...el.querySelectorAll('tr')].map((row) =>
-          [...row.children]
-            .map((cell) => cleanLines(inline(cell)).replace(/\n/g, ' '))
-            .filter(Boolean)
-            .join(' · '),
-        );
-        const text = rows.filter(Boolean).join('\n');
-        if (text) out.push(text);
-      } else if (tag === 'P' || tag === 'LI' || tag === 'PRE') {
-        const text = cleanLines(tag === 'PRE' ? escapeText(el.textContent ?? '') : inline(el));
-        if (text) out.push(text);
-      } else {
-        blocks(el, out);
-      }
-    } else {
+    if (node.nodeType !== Node.ELEMENT_NODE) {
       buffer += inline(node);
+      continue;
+    }
+    const el = node as HTMLElement;
+    const tag = el.tagName;
+    if (!BLOCK_TAGS.has(tag)) {
+      // Inline wrappers around whole paragraphs, such as Google Docs' <b id="docs-internal-guid-…">.
+      if (!SKIP_TAGS.has(tag) && el.querySelector(BLOCK_SELECTOR)) {
+        flush();
+        blocks(el, out);
+      } else buffer += inline(el);
+      continue;
+    }
+    flush();
+    if (/^H[1-6]$/.test(tag)) {
+      const level = Math.min(3, Number(tag[1]));
+      const text = cleanLines(inline(el)).replace(/\n/g, ' ');
+      if (text) out.push(piece(`${'#'.repeat(level)} ${text}`, el));
+    } else if (tag === 'UL' || tag === 'OL') {
+      const items = [...el.children].filter((child) => child.tagName === 'LI');
+      const lines = items
+        .map((item, i) => {
+          const text = cleanLines(inline(item)).replace(/\n/g, ' ');
+          return text ? `${tag === 'OL' ? `${i + 1}.` : '•'} ${text}` : '';
+        })
+        .filter(Boolean);
+      if (lines.length) out.push(piece(lines.join('\n'), el));
+    } else if (tag === 'TABLE') {
+      const rows = [...el.querySelectorAll('tr')].map((row) =>
+        [...row.children]
+          .map((cell) => cleanLines(inline(cell)).replace(/\n/g, ' '))
+          .filter(Boolean)
+          .join(' · '),
+      );
+      const text = rows.filter(Boolean).join('\n');
+      if (text) out.push(piece(text, el));
+    } else if (tag === 'P' || tag === 'LI' || tag === 'PRE') {
+      const text = cleanLines(tag === 'PRE' ? escapeText(el.textContent ?? '') : inline(el));
+      out.push(text ? piece(text, el) : null);
+    } else {
+      blocks(el, out);
     }
   }
   flush();
 }
 
+/**
+ * Joins the blocks so the script keeps the author's line structure. Paragraphs are normally separated
+ * by a blank line; documents that space their text with empty paragraphs (a script typed line by line
+ * in Word or Google Docs) and paragraphs with no margins become lines of one block instead, and every
+ * empty paragraph stays a blank line.
+ */
+function joinPieces(pieces: (Piece | null)[]): string {
+  let boundaries = 0;
+  let spaced = 0;
+  let started = false;
+  let empties = 0;
+  for (const p of pieces) {
+    if (p === null) {
+      if (started) empties++;
+      continue;
+    }
+    if (started) {
+      boundaries++;
+      if (empties > 0) spaced++;
+    }
+    started = true;
+    empties = 0;
+  }
+  const spacerLayout = spaced > 0 && spaced * 10 >= boundaries;
+
+  let out = '';
+  let previous: Piece | null = null;
+  empties = 0;
+  for (const p of pieces) {
+    if (p === null) {
+      if (previous) empties++;
+      continue;
+    }
+    if (previous) {
+      const lines = spacerLayout || (previous.flushBottom && p.flushTop) ? empties : 1 + empties;
+      out += '\n'.repeat(lines + 1);
+    }
+    out += p.text;
+    previous = p;
+    empties = 0;
+  }
+  return out;
+}
+
 export function htmlToMarkup(html: string): string {
   const doc = new DOMParser().parseFromString(html, 'text/html');
-  const out: string[] = [];
+  const out: (Piece | null)[] = [];
   blocks(doc.body, out);
-  return out.join('\n\n');
+  return joinPieces(out);
 }
 
 /** True when pasted HTML carries formatting worth converting (otherwise plain text is used). */

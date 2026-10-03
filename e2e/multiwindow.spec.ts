@@ -42,7 +42,8 @@ test.describe('display window', () => {
       timeout: 8000,
     });
     await expect(page.getByTestId('stage')).toHaveAttribute('data-play-state', 'playing');
-    await expect.poll(() => pos(page), { timeout: 8000 }).toBeGreaterThan(3);
+    // The sample opens with a heading and a note set apart by blank lines, which scroll by first.
+    await expect.poll(() => pos(page), { timeout: 15000 }).toBeGreaterThan(3);
     expect(Math.abs((await pos(page)) - (await pos(display)))).toBeLessThan(2);
 
     // Pause, then close the display: the operator takes over at the same place.

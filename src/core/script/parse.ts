@@ -6,7 +6,7 @@ import { wordSegmenter } from './stats';
 /**
  * Teleprompter markup
  * -------------------
- *   blank line              new block (paragraph)
+ *   blank line              new block (paragraph); every blank line shows as an empty line
  *   # / ## / ### Title      section heading, used as a jump marker
  *   **strong**  *em* _em_  ==highlight==
  *   [[note]]                director note: shown dimmed, never read aloud
@@ -132,11 +132,19 @@ class ScriptParser {
   parse(body: string): ScriptDoc {
     const lines = body.split('\n');
     let offset = 0;
-    let para: { lines: Line[]; start: number; end: number } | null = null;
+    let blank = 0;
+    let para: { lines: Line[]; gap: number; start: number; end: number } | null = null;
 
     const closePara = () => {
-      if (para) this.blocks.push({ t: 'para', lines: para.lines, src: [para.start, para.end] });
+      if (para)
+        this.blocks.push({ t: 'para', lines: para.lines, gap: para.gap, src: [para.start, para.end] });
       para = null;
+    };
+    /** Blank lines before the block that starts here; leading blank lines of the script are dropped. */
+    const takeGap = () => {
+      const gap = this.blocks.length > 0 ? blank : 0;
+      blank = 0;
+      return gap;
     };
 
     for (const raw of lines) {
@@ -146,6 +154,7 @@ class ScriptParser {
 
       if (BLANK_RE.test(raw)) {
         closePara();
+        blank++;
         continue;
       }
 
@@ -165,6 +174,7 @@ class ScriptParser {
           level,
           line: { dir: this.lineDir(title), c },
           marker,
+          gap: takeGap(),
           src: [start, end],
         });
         continue;
@@ -176,13 +186,13 @@ class ScriptParser {
         this.block = this.blocks.length;
         const seconds = parseSeconds(cueLine[1]);
         const { cue, w } = this.addCue(seconds);
-        this.blocks.push({ t: 'cue', cue, w, seconds, dir: this.prevDir, src: [start, end] });
+        this.blocks.push({ t: 'cue', cue, w, seconds, dir: this.prevDir, gap: takeGap(), src: [start, end] });
         continue;
       }
 
       if (!para) {
         this.block = this.blocks.length;
-        para = { lines: [], start, end };
+        para = { lines: [], gap: takeGap(), start, end };
       }
       const c = this.inline(raw, 0, raw.length, 'word');
       para.lines.push({ dir: this.lineDir(plainText(c)), c });

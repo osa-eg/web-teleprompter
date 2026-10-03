@@ -3,26 +3,29 @@
  * --tp-align, --tp-ls, --tp-weight, --tp-fg, --tp-bg, --tp-mark, --tp-note, --tp-cue, --tp-em, --tp-guide.
  */
 
+/*
+ * Every blank line typed between two blocks shows as one empty line, so the script keeps the spacing
+ * it was written with. `--gap` (set inline) is the number of blank lines; `--blank` is one line.
+ */
 .block {
-  margin: 0;
-}
+  --blank: calc(var(--tp-lh, 1.5) * 1em);
 
-.para + .para,
-.cueBlock + .para,
-.para + .cueBlock,
-.para + .heading {
-  margin-block-start: 0.55em;
+  margin: 0;
+  margin-block-start: calc(var(--gap, 0) * var(--blank));
 }
 
 .heading {
-  margin-block: 0.5em 0.25em;
+  /* The heading text is smaller, so one empty line is measured in the size of the script text. */
+  --blank: calc(var(--tp-lh, 1.5) * 1em / 0.72);
+
+  margin-block: max(0.5em, calc(var(--gap, 0) * var(--blank))) 0.25em;
   font-size: 0.72em;
   font-weight: 800;
   color: var(--tp-guide, currentColor);
   opacity: 0.85;
 }
 
-.heading:first-child {
+.block:first-child {
   margin-block-start: 0;
 }
 
@@ -95,5 +98,5 @@
 
 .cueBlock {
   text-align: center;
-  margin-block: 0.3em;
+  margin-block: max(0.3em, calc(var(--gap, 0) * var(--blank))) 0.3em;
 }

@@ -74,4 +74,25 @@ test.describe('editor', () => {
     await expect(stats).toContainText('قسم واحد');
     await expect(stats).toContainText('وقفة واحدة');
   });
+
+  test('shows every blank line of the script as an empty line', async ({ page }) => {
+    await page.goto('./');
+    await page.getByTestId('script-card').first().waitFor();
+    await page.getByRole('button', { name: 'نص جديد' }).click();
+    await page.getByRole('textbox', { name: 'النص' }).fill('سطر أول\nسطر تاني\n\nفكرة جديدة\n\n\nفكرة تالتة');
+    const preview = page.getByTestId('preview');
+    if (!(await preview.isVisible())) await page.getByRole('button', { name: 'إظهار المعاينة' }).click();
+    await expect(preview.locator('[data-kind="para"]')).toHaveCount(3);
+
+    const gaps = await preview.evaluate((root) => {
+      const blocks = [...root.querySelectorAll<HTMLElement>('[data-kind="para"]')];
+      const line = parseFloat(getComputedStyle(blocks[0]!.querySelector('div')!).lineHeight);
+      return blocks.slice(1).map((block, i) => {
+        const previous = blocks[i]!.getBoundingClientRect();
+        return (block.getBoundingClientRect().top - previous.bottom) / line;
+      });
+    });
+    expect(gaps[0]).toBeCloseTo(1, 1);
+    expect(gaps[1]).toBeCloseTo(2, 1);
+  });
 });

@@ -19,10 +19,11 @@ export interface Line {
   c: Inline[];
 }
 
+/** `gap` is the number of blank lines typed between the block and the previous one (0 for the first). */
 export type Block =
-  | { t: 'heading'; level: 1 | 2 | 3; line: Line; marker: number; src: [number, number] }
-  | { t: 'para'; lines: Line[]; src: [number, number] }
-  | { t: 'cue'; cue: number; w: number; seconds?: number; dir: Dir; src: [number, number] };
+  | { t: 'heading'; level: 1 | 2 | 3; line: Line; marker: number; gap: number; src: [number, number] }
+  | { t: 'para'; lines: Line[]; gap: number; src: [number, number] }
+  | { t: 'cue'; cue: number; w: number; seconds?: number; dir: Dir; gap: number; src: [number, number] };
 
 export interface Token {
   /** Positional index (equals the position in `ScriptDoc.tokens`). */
