@@ -19,6 +19,17 @@ describe('blocks', () => {
     expect(para(doc, 1).lines).toHaveLength(1);
   });
 
+  it('counts the blank lines before each block', () => {
+    const doc = parseScript('\n\n# Title\none\n\ntwo\n\n\n\n[pause]\nthree');
+    expect(doc.blocks.map((b) => [b.t, b.gap])).toEqual([
+      ['heading', 0],
+      ['para', 0],
+      ['para', 1],
+      ['cue', 3],
+      ['para', 0],
+    ]);
+  });
+
   it('treats whitespace-only lines as blank', () => {
     expect(parseScript('a\n   \t\nb').blocks).toHaveLength(2);
   });

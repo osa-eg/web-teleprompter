@@ -33,7 +33,11 @@ export async function readImportFile(file: File): Promise<ImportResult> {
   try {
     if (ext === 'docx') {
       const { default: mammoth } = await import('mammoth');
-      const { value } = await mammoth.convertToHtml({ arrayBuffer: await file.arrayBuffer() });
+      // Empty paragraphs are the blank lines of the script, so they are kept.
+      const { value } = await mammoth.convertToHtml(
+        { arrayBuffer: await file.arrayBuffer() },
+        { ignoreEmptyParagraphs: false },
+      );
       return { kind: 'script', title, body: clean(htmlToMarkup(value)), legacyEncoding: false };
     }
     const { text, encoding } = decodeText(new Uint8Array(await file.arrayBuffer()));

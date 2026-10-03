@@ -26,6 +26,41 @@ describe('htmlToMarkup', () => {
     expect(htmlToMarkup(html)).toBe('**Bold** and *italic*');
   });
 
+  it('keeps the lines and blank lines of a Google Docs copy', () => {
+    const line = (text: string) =>
+      `<p dir="rtl" style="line-height:1.38;margin-top:0pt;margin-bottom:0pt;"><span style="font-weight:400;">${text}</span></p>`;
+    const html =
+      '<meta charset="utf-8"><b style="font-weight:normal;" id="docs-internal-guid-1a2b">' +
+      `${line('قبل ما تدفع ريال واحد')}${line('<span style="font-weight:700">على تطبيقك…</span>')}<br>` +
+      `${line('فيه 7 أسئلة')}<br><br>${line('مهم جدًا')}</b><br class="Apple-interchange-newline">`;
+    expect(htmlToMarkup(html)).toBe('قبل ما تدفع ريال واحد\n**على تطبيقك…**\n\nفيه 7 أسئلة\n\n\nمهم جدًا');
+  });
+
+  it('turns empty paragraphs into blank lines when a document is spaced with them', () => {
+    const html = '<p>سطر أول</p><p>سطر تاني</p><p>&nbsp;</p><p>فقرة جديدة</p><p></p><p></p><p>أخيرة</p>';
+    expect(htmlToMarkup(html)).toBe('سطر أول\nسطر تاني\n\nفقرة جديدة\n\n\nأخيرة');
+  });
+
+  it('keeps paragraphs apart when a stray empty paragraph does not space the document', () => {
+    const paragraphs = Array.from({ length: 12 }, (_, i) => `<p>p${i}</p>`);
+    paragraphs.splice(6, 0, '<p></p>');
+    const markup = htmlToMarkup(paragraphs.join(''));
+    expect(markup.split('\n\n')).toHaveLength(12);
+    expect(markup).toContain('p5\n\n\np6');
+  });
+
+  it('keeps the blank lines of editors that write lines as <div>', () => {
+    expect(htmlToMarkup('<div>one</div><div>two</div><div><br></div><div>three</div>')).toBe(
+      'one\ntwo\n\nthree',
+    );
+  });
+
+  it('lets an explicit font weight or style win over the tag', () => {
+    expect(
+      htmlToMarkup('<p><b style="font-weight:normal">plain</b> <i style="font-style:normal">x</i></p>'),
+    ).toBe('plain x');
+  });
+
   it('escapes characters that would become markup', () => {
     const markup = htmlToMarkup('<p>2 * 3 = 6 and [pause] stays literal</p>');
     expect(markup).toBe('2 \\* 3 \\= 6 and \\[pause\\] stays literal');

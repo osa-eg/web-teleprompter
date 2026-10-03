@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { memo, type ReactNode } from 'react';
+import { memo, type CSSProperties, type ReactNode } from 'react';
 import { stripTashkeel, toArabicIndicDigits, toWesternDigits } from '@/core/script/arabic';
 import type { Block, Inline, Line, ScriptDoc } from '@/core/script/ast';
 import styles from './ScriptView.module.css';
@@ -69,12 +69,16 @@ function LineView({ line, options, prefix }: { line: Line; options: RenderOption
   );
 }
 
+/** Blank lines typed before a block, laid out by the stylesheet as empty lines. */
+const gapStyle = (gap: number) => (gap > 0 ? ({ '--gap': gap } as CSSProperties) : undefined);
+
 function BlockView({ block, index, options }: { block: Block; index: number; options: RenderOptions }) {
   switch (block.t) {
     case 'heading':
       return (
         <div
           className={clsx(styles.block, styles.heading)}
+          style={gapStyle(block.gap)}
           data-block={index}
           data-kind="heading"
           data-level={block.level}
@@ -86,7 +90,12 @@ function BlockView({ block, index, options }: { block: Block; index: number; opt
       );
     case 'para':
       return (
-        <div className={clsx(styles.block, styles.para)} data-block={index} data-kind="para">
+        <div
+          className={clsx(styles.block, styles.para)}
+          style={gapStyle(block.gap)}
+          data-block={index}
+          data-kind="para"
+        >
           {block.lines.map((line, i) => (
             <LineView key={i} line={line} options={options} prefix={`${index}.${i}`} />
           ))}
@@ -96,6 +105,7 @@ function BlockView({ block, index, options }: { block: Block; index: number; opt
       return (
         <div
           className={clsx(styles.block, styles.cueBlock)}
+          style={gapStyle(block.gap)}
           data-block={index}
           data-kind="cue"
           dir={block.dir}
